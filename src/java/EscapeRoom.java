@@ -1,6 +1,7 @@
 // Environment code for project escape
 
 import jason.asSyntax.*;
+import jason.asSyntax.parser.ParseException;
 import jason.environment.*;
 import java.util.logging.*;
 
@@ -12,7 +13,12 @@ public class EscapeRoom extends Environment {
     @Override
     public void init(String[] args) {
         super.init(args);
-        addPercept(ASSyntax.parseLiteral("percept(demo)"));
+        try {
+			addPercept(ASSyntax.parseLiteral("percept(demo)"));
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
     @Override
