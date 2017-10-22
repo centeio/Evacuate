@@ -1,3 +1,4 @@
+package world;
 // Environment code for project escape
 
 import jason.asSyntax.*;
@@ -7,12 +8,16 @@ import java.util.logging.*;
 
 public class EscapeRoom extends Environment {
 
-    private Logger logger = Logger.getLogger("escape."+EscapeRoom.class.getName());
+    private Logger logger =  Logger.getLogger("escape."+EscapeRoom.class.getName());
+    RoomModel model;
+    RoomView view;
 
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
     public void init(String[] args) {
         super.init(args);
+        model = RoomModel.create(30, 20, 4);
+        view = new RoomView(model, "Escape Room", 700);
         try {
 			addPercept(ASSyntax.parseLiteral("percept(demo)"));
 		} catch (ParseException e) {

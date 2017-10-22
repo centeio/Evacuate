@@ -2,7 +2,7 @@ MAS escape {
 
 	infrastructure: Centralised
 
-	environment: EscapeRoom
+	environment: world.EscapeRoom
 
 	agents:
 		agent1 sample_agent;
