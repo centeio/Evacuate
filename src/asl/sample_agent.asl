@@ -10,6 +10,5 @@
 
 +!start : true <- .print("hello world.").
 
-
 +fire[source(Ag)] :  Ag \== self
 <- .print("Agent ", Ag, " said there's a fire!! Run!!").

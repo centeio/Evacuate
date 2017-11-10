@@ -7,11 +7,16 @@ import jason.environment.grid.GridWorldView;
 
 public class RoomView extends GridWorldView {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public RoomView(RoomModel model, String title, int windowSize) {
 		super(model, title, windowSize);
 		setVisible(true);
-		repaint();
 		setSize(1200, 600);
+		repaint();
 	}
 	
 	@Override
@@ -21,6 +26,7 @@ public class RoomView extends GridWorldView {
             drawDoor(g, x, y);
             break;
         }
+        repaint();
     }
 	
 	public void drawDoor(Graphics g, int x, int y) {
@@ -28,5 +34,20 @@ public class RoomView extends GridWorldView {
         g.drawRect(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
         g.fillRect(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
     }
+	
+	/*@Override
+    public void drawAgent(Graphics g, int x, int y, Color c, int id) {
+        String label = "R"+(id+1);
+        c = Color.blue;
+        
+        super.drawAgent(g, x, y, c, -1);
+        if (id == 0) {
+            g.setColor(Color.black);
+        } else {
+            g.setColor(Color.white);
+        }
+        super.drawString(g, x, y, defaultFont, label);
+        repaint();
+    }*/
 
 }

@@ -1,6 +1,7 @@
 package world;
 
 import jason.environment.grid.GridWorldModel;
+import jason.environment.grid.Location;
 
 public class RoomModel extends GridWorldModel {
 	
@@ -115,12 +116,26 @@ public class RoomModel extends GridWorldModel {
         model.add(RoomModel.OBSTACLE, 27, 19);
         model.add(RoomModel.OBSTACLE, 28, 19);
         
-        
         return model;
     }
 
 	private RoomModel(int w, int h, int nAgs) {
 		super(w, h, nAgs);
 	}
+
+	/*public void move_randomly() {
+		Location r1 = getAgPos(0);
+		
+        r1.x++;
+        if (r1.x == getWidth()) {
+            r1.x = 0;
+            r1.y++;
+        }
+        // finished searching the whole grid
+        if (r1.y == getHeight()) {
+            return;
+        }
+        setAgPos(0, r1);	
+	}*/
 
 }
