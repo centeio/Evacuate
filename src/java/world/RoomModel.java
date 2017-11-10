@@ -1,5 +1,7 @@
 package world;
 
+import java.util.Random;
+
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
 
@@ -131,16 +133,24 @@ public class RoomModel extends GridWorldModel {
 
 	public void move_randomly() {
 		Location r1 = getAgPos(0);
+		Random randomGenerator = new Random(System.currentTimeMillis());
+		int randomX, randomY;
+		do {
+			randomX = randomGenerator.nextInt(3) - 1;
+			randomY = randomGenerator.nextInt(3) - 1;
+		}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY));
 		
-        r1.x++;
-        if (r1.x == getWidth()) {
+		r1.x += randomX;
+		r1.y += randomY;
+		
+		/*      if (r1.x == getWidth()) {
             r1.x = 0;
             r1.y++;
         }
         // finished searching the whole grid
         if (r1.y == getHeight()) {
             return;
-        }
+        }*/
         setAgPos(0, r1);	
 	}
 
