@@ -24,7 +24,7 @@ public class EscapeRoom extends Environment {
         model.setView(view);
     }
 
-    /*@Override
+    @Override
     public boolean executeAction(String agName, Structure action) {
     	logger.info(agName+" doing: "+ action);
         
@@ -53,7 +53,7 @@ public class EscapeRoom extends Environment {
         Location r1Loc = model.getAgPos(0);
         Literal pos1 = Literal.parseLiteral("pos(ag1," + r1Loc.x + "," + r1Loc.y + ")");
         addPercept(pos1);
-    }*/
+    }
 
     /** Called before the end of MAS execution */
     @Override

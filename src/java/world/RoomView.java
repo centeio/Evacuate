@@ -16,7 +16,6 @@ public class RoomView extends GridWorldView {
 		super(model, title, windowSize);
 		setVisible(true);
 		setSize(1200, 600);
-		repaint();
 	}
 	
 	@Override
@@ -26,7 +25,6 @@ public class RoomView extends GridWorldView {
             drawDoor(g, x, y);
             break;
         }
-        repaint();
     }
 	
 	public void drawDoor(Graphics g, int x, int y) {
@@ -35,19 +33,16 @@ public class RoomView extends GridWorldView {
         g.fillRect(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
     }
 	
-	/*@Override
+	@Override
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
-        String label = "R"+(id+1);
         c = Color.blue;
         
-        super.drawAgent(g, x, y, c, -1);
+        super.drawAgent(g, x, y, c, id);
         if (id == 0) {
             g.setColor(Color.black);
         } else {
             g.setColor(Color.white);
         }
-        super.drawString(g, x, y, defaultFont, label);
-        repaint();
-    }*/
+    }
 
 }

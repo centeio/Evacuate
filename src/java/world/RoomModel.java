@@ -121,9 +121,15 @@ public class RoomModel extends GridWorldModel {
 
 	private RoomModel(int w, int h, int nAgs) {
 		super(w, h, nAgs);
+		
+        try {
+            setAgPos(0, 2, 2);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
-	/*public void move_randomly() {
+	public void move_randomly() {
 		Location r1 = getAgPos(0);
 		
         r1.x++;
@@ -136,6 +142,6 @@ public class RoomModel extends GridWorldModel {
             return;
         }
         setAgPos(0, r1);	
-	}*/
+	}
 
 }

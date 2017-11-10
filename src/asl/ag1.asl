@@ -8,6 +8,9 @@
 
 /* Plans */
 
++!move_randomly : true <- 
+	move(agent);
+	!move_randomly.
 
 +fire[source(Ag)] :  Ag \== self
 <- .print("Agent ", Ag, " said there's a fire!! Run!!").
