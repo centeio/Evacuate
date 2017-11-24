@@ -14,27 +14,24 @@ posY(5).
 
 /* Plans */
 
-+!start : true <- !move_randomly.
++!start : true <- !move.
 
-+!move_randomly : true <- 
++!move: panicscale(P) & P < 0.5 <- 
+	.print(P);
 	.print("randomly moving");
 	move;
-	!move_randomly.
+	!move.
 	
-+!move_accident : panicscale(P) & P > 0.5 <-
++!move : panicscale(P) & P > 0.5 <-
+	.print(P);
 	.print("moving!!!");
 	alert;
 /* -!move_randomly */	
-	!move_accident.
-
-+!move_accident : true <-
-	.print("eheh");
-	!move_randomly.
+	!move.
 	
 +accident: true <- 
 	panicscale;
-	.print("panicscale changed");
-	!move_accident.
+	.print("panicscale changed").
 
 +fire[source(Ag)] :  Ag \== self
 <- .print("Agent ", Ag, " said there's a fire!! Run!!").
