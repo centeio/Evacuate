@@ -21,7 +21,7 @@ public class RoomModel extends GridWorldModel {
         
         FileReader file;
         try {
-        	file = new FileReader("src/java/worldMaps/Map1.txt");
+        	file = new FileReader("worldMaps/Map1.txt");
         	BufferedReader br = new BufferedReader(file);
             
             String line;
