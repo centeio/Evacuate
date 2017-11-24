@@ -19,7 +19,8 @@ public class EscapeRoom extends Environment {
     @Override
     public void init(String[] args) {
         super.init(args);
-        model = RoomModel.create(30, 20, 4);
+        
+        model = RoomModel.create(30, 20, 1);
         view = new RoomView(model, "Escape Room", 700);
         model.setView(view);
     }

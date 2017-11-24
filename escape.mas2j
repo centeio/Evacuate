@@ -5,9 +5,7 @@ MAS escape {
 	environment: world.EscapeRoom
 
 	agents:
-		ag2;
-		ag1;
-		agent1 sample_agent;
+		environmentAg;
 
 	aslSourcePath:
 		"src/asl";

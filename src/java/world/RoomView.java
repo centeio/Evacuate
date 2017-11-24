@@ -35,14 +35,8 @@ public class RoomView extends GridWorldView {
 	
 	@Override
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
-        c = Color.blue;
-        
-        super.drawAgent(g, x, y, c, id);
-        if (id == 0) {
-            g.setColor(Color.black);
-        } else {
-            g.setColor(Color.white);
-        }
+		c = Color.blue;
+		super.drawAgent(g, x, y, c, id);
     }
 
 }

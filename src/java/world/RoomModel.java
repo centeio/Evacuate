@@ -8,6 +8,7 @@ import jason.environment.grid.Location;
 public class RoomModel extends GridWorldModel {
 	
 	public static final int DOOR  = 16;
+	public static final int SECURITY  = 16;
 	
 	// singleton pattern
     protected static RoomModel model = null;
@@ -16,7 +17,7 @@ public class RoomModel extends GridWorldModel {
         if (model == null) {
             model = new RoomModel(w, h, nbAgs);
         }
-        
+             
         //Walls
         model.add(RoomModel.OBSTACLE, 0, 0);
         model.add(RoomModel.OBSTACLE, 0, 1);
@@ -118,23 +119,36 @@ public class RoomModel extends GridWorldModel {
         model.add(RoomModel.OBSTACLE, 27, 19);
         model.add(RoomModel.OBSTACLE, 28, 19);
         
+        //Random agent position
+        Random randomGenerator = new Random(System.currentTimeMillis());
+		int x, y;
+		
+        try {
+        	for(int i = 0; i < nbAgs; i++) {        		
+        		do {
+        			x = randomGenerator.nextInt(model.getWidth());
+        			y = randomGenerator.nextInt(model.getHeight());
+        		}while(!model.isFreeOfObstacle(x,y));
+        		
+        		model.setAgPos(i, x, y);
+        	}
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
         return model;
     }
 
 	private RoomModel(int w, int h, int nAgs) {
 		super(w, h, nAgs);
-		
-        try {
-            setAgPos(0, 2, 2);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 	}
 
 	public void move_randomly() {
 		Location r1 = getAgPos(0);
 		Random randomGenerator = new Random(System.currentTimeMillis());
 		int randomX, randomY;
+		
 		do {
 			randomX = randomGenerator.nextInt(3) - 1;
 			randomY = randomGenerator.nextInt(3) - 1;
@@ -143,14 +157,6 @@ public class RoomModel extends GridWorldModel {
 		r1.x += randomX;
 		r1.y += randomY;
 		
-		/*      if (r1.x == getWidth()) {
-            r1.x = 0;
-            r1.y++;
-        }
-        // finished searching the whole grid
-        if (r1.y == getHeight()) {
-            return;
-        }*/
         setAgPos(0, r1);	
 	}
 

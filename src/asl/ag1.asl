@@ -4,13 +4,8 @@
 
 /* Initial goals */
 
-!move_randomly.
-
 /* Plans */
 
-+!move_randomly : true <- 
++!move_randomly[source(self)] : true <- 
 	move(agent);
 	!move_randomly.
-
-+fire[source(Ag)] :  Ag \== self
-<- .print("Agent ", Ag, " said there's a fire!! Run!!").
