@@ -8,4 +8,4 @@
 
 /* Plans */
 
-+!start : true <- myLib.createagents.
++!start : true <- myLib.createagents(3).

@@ -1,7 +1,6 @@
 package world;
 
 import java.util.Random;
-
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
 
@@ -144,8 +143,12 @@ public class RoomModel extends GridWorldModel {
 		super(w, h, nAgs);
 	}
 
-	public void move_randomly() {
-		Location r1 = getAgPos(0);
+	public void move_randomly(String agName, EscapeRoom escapeRoom) {
+		
+		int agent = getAgentByName(agName);
+		System.out.println(agent);
+		
+		Location r1 = getAgPos(agent);
 		Random randomGenerator = new Random(System.currentTimeMillis());
 		int randomX, randomY;
 		
@@ -157,7 +160,36 @@ public class RoomModel extends GridWorldModel {
 		r1.x += randomX;
 		r1.y += randomY;
 		
+        setAgPos(agent, r1);
+	}
+
+	
+	public void move_alert(String agName, EscapeRoom escapeRoom) {
+		Location r1 = getAgPos(Integer.parseInt(agName.substring(3, agName.length())));
+		r1.x++;
+     if (r1.x == getWidth()) {
+            r1.x = 0;
+            r1.y++;
+        }
+        // finished searching the whole grid
+        if (r1.y == getHeight()) {
+            return;
+        }
         setAgPos(0, r1);	
 	}
 
+	public void agentWait() {
+		Random randomGenerator = new Random(System.currentTimeMillis());
+		try {
+			Thread.sleep(3000 + randomGenerator.nextInt(5)*1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	private int getAgentByName(String agName) {
+		return Integer.parseInt(agName.substring(3, agName.length()));
+	}
+	
 }

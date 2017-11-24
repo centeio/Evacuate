@@ -18,13 +18,11 @@ public class createagents extends DefaultInternalAction {
         // execute the internal action
         ts.getAg().getLogger().info("executing internal action 'world.CreateAgents'");
         
-        for(int i = 0; i < 1; i++) {
-        	System.out.println("GELLO");
+        for(int i = 0; i < Integer.parseInt(args[0].toString()); i++) {
         	Settings s = new Settings();
-            s.addOption(Settings.INIT_GOALS, "move_randomly");
 
             RuntimeServicesInfraTier rs = ts.getUserAgArch().getRuntimeServices();
-            String name = "Bob";
+            String name = "Bob"+i;
             name = rs.createAgent(name, "ag1.asl", null, null, null, s, ts.getAg());
             rs.startAgent(name);
         }
