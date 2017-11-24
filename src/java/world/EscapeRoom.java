@@ -5,6 +5,8 @@ import jason.asSyntax.*;
 import jason.environment.*;
 import jason.environment.grid.Location;
 
+import java.util.Collection;
+import java.util.Random;
 import java.util.logging.*;
 
 public class EscapeRoom extends Environment {
@@ -13,7 +15,10 @@ public class EscapeRoom extends Environment {
     RoomModel model;
     RoomView view;
     
-    public static final Term    move = Literal.parseLiteral("move(agent)");
+    public static final Term    move = Literal.parseLiteral("move");
+    public static final Term    wait = Literal.parseLiteral("wait");
+    public static final Term    alert = Literal.parseLiteral("alert");
+    public static final Term    panic = Literal.parseLiteral("panicscale");    
 
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
@@ -30,8 +35,19 @@ public class EscapeRoom extends Environment {
         
         try {
             if (action.equals(move)) {
-                model.move_randomly();
-            } else {
+                model.move_randomly(agName, this);
+            }
+            else if (action.equals(wait)) {
+            	System.out.println("Here");
+                model.agentWait();
+            }
+            else if (action.equals(alert)) {
+                model.move_alert(agName, this);
+            }
+            else if (action.equals(panic)) {
+                panic(agName);
+            }            
+            else {
                 return false;
             }
         } catch (Exception e) {
@@ -47,6 +63,15 @@ public class EscapeRoom extends Environment {
         return true;
     }
     
+	public void panic(String agent) {
+		Random randomGenerator = new Random(System.currentTimeMillis());
+		double panic = randomGenerator.nextInt(10)/10.0;
+		Literal p = Literal.parseLiteral("panicscale("+ panic + ").");
+		System.out.println("Panic: "+panic);
+		addPercept(agent, p);		
+	}    
+	
+		
     void updatePercepts() {
         clearPercepts();
 

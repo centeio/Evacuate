@@ -8,7 +8,11 @@
 
 /* Plans */
 
-+!start : true <- .print("hello world.").
++!start : true <- 
+	.print("started waiting");
+	wait;
+	.print("finished waiting");
+	.broadcast(tell, accident).
 
 +fire[source(Ag)]
    :  Ag \== self
