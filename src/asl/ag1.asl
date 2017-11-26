@@ -15,21 +15,20 @@ posY(5).
 /* Plans */
 
 +!start : true <- !move.
-
-+!move: panicscale(P) & P < 0.5 <- 
-	.print(P);
-	.print("randomly moving");
-	move;
-	!move.
 	
 +!move : panicscale(P) & P > 0.5 <-
 	.print(P);
 	.print("moving!!!");
 	alert;
-/* -!move_randomly */	
 	!move.
-	
-+accident: true <- 
+
++!move : panicscale(P) & P < 0.5 <- 
+	.print(P);
+	.print("randomly moving");
+	move;
+	!move.
+		
++accident : true <- 
 	panicscale;
 	.print("panicscale changed").
 

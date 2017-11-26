@@ -66,8 +66,8 @@ public class EscapeRoom extends Environment {
 	public void panic(String agent) {
 		Random randomGenerator = new Random(System.currentTimeMillis());
 		double panic = randomGenerator.nextInt(10)/10.0;
-		Literal p = Literal.parseLiteral("panicscale("+ panic + ").");
-		System.out.println("Panic: "+panic);
+		Literal p = Literal.parseLiteral("panicscale("+ panic + ")");
+		System.out.println("Panic ag "+ agent +": "+panic);
 		addPercept(agent, p);		
 	}    
 	
