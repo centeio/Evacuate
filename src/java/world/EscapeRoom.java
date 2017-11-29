@@ -17,15 +17,19 @@ public class EscapeRoom extends Environment {
     public static final Term    move = Literal.parseLiteral("move");
     public static final Term    wait = Literal.parseLiteral("wait");
     public static final Term    alert = Literal.parseLiteral("alert");
-    public static final Term    panic = Literal.parseLiteral("panicscale");    
+    public static final Term    panic = Literal.parseLiteral("panicscale");
+    public static final Term    createFire = Literal.parseLiteral("createFire");
+    public static final Term    environment = Literal.parseLiteral("environment");
+    private static final int 	numberAgents = 10;
+    private static final int 	numberSecurity = 2;
 
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
     public void init(String[] args) {
         super.init(args);
         
-        model = RoomModel.create(30, 20, 3);
-        view = new RoomView(model, "Escape Room", 700);
+        model = RoomModel.create(30, 20, numberAgents, numberSecurity);
+        view = new RoomView(model, "Escape Room", 700, numberAgents, numberSecurity);
         model.setView(view);
     }
 
@@ -46,7 +50,12 @@ public class EscapeRoom extends Environment {
             }
             else if (action.equals(panic)) {
                 panic(agName);
-            }            
+            }
+            else if(action.equals(createFire))
+            	model.create_fire();
+            else if(action.equals(environment)) {
+            	model.environment();
+            }
             else {
                 return false;
             }
@@ -67,7 +76,6 @@ public class EscapeRoom extends Environment {
 		Random randomGenerator = new Random(System.currentTimeMillis());
 		double panic = randomGenerator.nextInt(10)/10.0;
 		Literal p = Literal.parseLiteral("panicscale("+ panic + ").");
-		System.out.println("Panic: "+panic);
 		addPercept(agent, p);		
 	}    
 	

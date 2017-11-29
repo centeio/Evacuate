@@ -18,12 +18,23 @@ public class createagents extends DefaultInternalAction {
         // execute the internal action
         ts.getAg().getLogger().info("executing internal action 'world.CreateAgents'");
         
-        for(int i = 0; i < Integer.parseInt(args[0].toString()); i++) {
+        int numAgents = Integer.parseInt(args[0].toString()), numSegs = Integer.parseInt(args[1].toString());
+        
+        for(int i = 0; i < numAgents; i++) {
         	Settings s = new Settings();
 
             RuntimeServicesInfraTier rs = ts.getUserAgArch().getRuntimeServices();
             String name = "Bob"+i;
             name = rs.createAgent(name, "ag1.asl", null, null, null, s, ts.getAg());
+            rs.startAgent(name);
+        }
+        
+        for(int i = numAgents; i < numAgents + numSegs; i++) {
+        	Settings s = new Settings();
+
+            RuntimeServicesInfraTier rs = ts.getUserAgArch().getRuntimeServices();
+            String name = "Seg"+i;
+            name = rs.createAgent(name, "seg.asl", null, null, null, s, ts.getAg());
             rs.startAgent(name);
         }
         

@@ -3,20 +3,24 @@ package world;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.Random;
+import java.util.Vector;
+
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
 
 public class RoomModel extends GridWorldModel {
 	
 	public static final int DOOR  = 16;
-	public static final int SECURITY  = 16;
+	public static final int FIRE = 32;
+	public static final int FIRESPREAD = 25;
+	private Vector<Location> firePositions = new Vector<Location>();
 	
 	// singleton pattern
     protected static RoomModel model = null;
 
-    synchronized public static RoomModel create(int w, int h, int nbAgs) {
+    synchronized public static RoomModel create(int w, int h, int nbAgs, int nbSegs) {
         if (model == null) {
-            model = new RoomModel(w, h, nbAgs);
+            model = new RoomModel(w, h, nbAgs + nbSegs);
         }
         
         FileReader file;
@@ -49,11 +53,11 @@ public class RoomModel extends GridWorldModel {
 		int x, y;
 		
         try {
-        	for(int i = 0; i < nbAgs; i++) {        		
+        	for(int i = 0; i < nbAgs + nbSegs; i++) {        		
         		do {
         			x = randomGenerator.nextInt(model.getWidth());
         			y = randomGenerator.nextInt(model.getHeight());
-        		}while(!model.isFreeOfObstacle(x,y));
+        		}while(!model.isFree(x,y));
         		
         		model.setAgPos(i, x, y);
         	}
@@ -117,8 +121,102 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 	
-	private int getAgentByName(String agName) {
-		return Integer.parseInt(agName.substring(3, agName.length()));
+	public void create_fire() {
+		Random randomGenerator = new Random(System.currentTimeMillis());
+		int x, y;
+		
+		try {
+    		do {
+    			x = randomGenerator.nextInt(model.getWidth());
+    			y = randomGenerator.nextInt(model.getHeight());
+    		}while(!model.isFree(x,y));
+    		
+    		model.add(RoomModel.FIRE, x, y);
+    		
+    		firePositions.add(new Location(x,y));
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 	
+	public void environment() {
+		Random randomGenerator = new Random(System.currentTimeMillis());
+		int count = 0;
+		Vector<Location> copy = firePositions;
+		
+		for(int i = 0; i < copy.size(); i++) {
+						
+			//TOP
+			Location top = new Location(copy.get(i).x, copy.get(i).y - 1);
+			
+			if(model.isFreeOfObstacle(top) &&
+					model.isFree(FIRE, top)) {
+				
+				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+					model.add(FIRE, top);
+					firePositions.add(top);
+				}
+				
+			} else
+				count++;
+			
+			
+			//RIGHT
+			Location right = new Location(copy.get(i).x + 1, copy.get(i).y);
+			
+			if(model.isFreeOfObstacle(right) &&
+					model.isFree(FIRE, right)) {
+				
+				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+					model.add(FIRE, right);
+					firePositions.add(right);
+				}
+				
+			} else
+				count++;
+			
+			//BOTTOM
+			Location bottom = new Location(copy.get(i).x, copy.get(i).y + 1);
+			
+			if(model.isFreeOfObstacle(bottom) &&
+					model.isFree(FIRE, bottom)) {
+				
+				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+					model.add(FIRE, bottom);
+					firePositions.add(bottom);
+				}
+				
+			} else
+				count++;
+			
+			//LEFT
+			Location left = new Location(copy.get(i).x - 1, copy.get(i).y);
+			
+			if(model.isFreeOfObstacle(left) &&
+					model.isFree(FIRE, left)) {
+
+				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+					model.add(FIRE, left);
+					firePositions.add(left);
+				}
+				
+			} else
+				count++;
+			
+			if(count == 4)
+				firePositions.remove(i);
+			
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	private int getAgentByName(String agName) {
+		return Integer.parseInt(agName.substring(3, agName.length()));
+	}	
 }

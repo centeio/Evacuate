@@ -8,4 +8,11 @@
 
 /* Plans */
 
-+!start : true <- myLib.createagents(3).
++!start : true <- 
+	myLib.createagents(10, 2);
+	createFire;
+	!continue.
+	
++!continue : true <-
+	environment;
+	!continue.
