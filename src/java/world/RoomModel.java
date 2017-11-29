@@ -12,7 +12,7 @@ public class RoomModel extends GridWorldModel {
 	
 	public static final int DOOR  = 16;
 	public static final int FIRE = 32;
-	public static final int FIRESPREAD = 25;
+	public static final int FIRESPREAD = 40;
 	private Vector<Location> firePositions = new Vector<Location>();
 	
 	// singleton pattern
