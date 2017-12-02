@@ -49,7 +49,7 @@ public class EscapeRoom extends Environment {
                 model.move_alert(agName, this);
             }
             else if (action.equals(panic)) {
-                panic(agName);
+                model.panic(agName);
             }
             else if(action.equals(createFire))
             	model.create_fire();
@@ -71,21 +71,31 @@ public class EscapeRoom extends Environment {
         informAgsEnvironmentChanged();
         return true;
     }
-    
-	public void panic(String agent) {
-		Random randomGenerator = new Random(System.currentTimeMillis());
-		double panic = randomGenerator.nextInt(10)/10.0;
-		Literal p = Literal.parseLiteral("panicscale("+ panic + ").");
-		addPercept(agent, p);		
-	}    
+      
 	
-		
     void updatePercepts() {
-        clearPercepts();
-
-        Location r1Loc = model.getAgPos(0);
-        Literal pos1 = Literal.parseLiteral("pos(ag1," + r1Loc.x + "," + r1Loc.y + ")");
-        addPercept(pos1);
+       /* clearPercepts("ag2");
+        Location agloc1 = model.getAgPos(0);
+        Literal pos1 = Literal.parseLiteral("pos(bob" + 0 + "," + agloc1.x + "," + agloc1.y + ")");
+        addPercept("ag2", pos1);*/
+        
+        for(int i=0; i<model.getnAgs(); i++) {
+        	clearPercepts("bob"+i);
+        	
+        	//agent's location
+	        Location agloc = model.getAgPos(0);
+	        Literal pos = Literal.parseLiteral("pos(bob" + i + "," + agloc.x + "," + agloc.y + ")");
+	        addPercept("bob"+i, pos);
+	        //agent's panic scale
+	        double panic = model.getAgPanic(i);
+	        Literal agpanic = Literal.parseLiteral("panicscale(bob"+i+","+ panic +")");
+	        addPercept("bob"+i,agpanic);
+	        //agent's selflessness
+	        double selfln = model.getAgPanic(i);
+	        Literal agselfln = Literal.parseLiteral("selflessness(bob"+i+","+ selfln +")");
+	        addPercept("bob"+i,agselfln);
+	        
+        }
     }
 
     /** Called before the end of MAS execution */

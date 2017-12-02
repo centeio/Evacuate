@@ -1,12 +1,7 @@
 // Agent ag1 in project escape
 
 /* Initial beliefs and rules */
-
-injuryscale(0).
-panicscale(0).
-selflessness(0.5).
-posX(5).
-posY(5).
+panicscale(0.0).
 
 /* Initial goals */
 
@@ -22,11 +17,15 @@ posY(5).
 	alert;
 	!move.
 
-+!move : panicscale(P) & P < 0.5 <- 
++!move : panicscale(P) & P <= 0.5 <- 
 	.print(P);
 	.print("randomly moving");
 	move;
 	!move.
+
+/*-!move<-
+	!move.*/
+	
 		
 +accident : true <- 
 	panicscale;
