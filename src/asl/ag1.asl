@@ -1,7 +1,6 @@
 // Agent ag1 in project escape
 
 /* Initial beliefs and rules */
-panicscale(0.0).
 
 /* Initial goals */
 
@@ -9,26 +8,36 @@ panicscale(0.0).
 
 /* Plans */
 
-+!start : true <- !move.
++!start <-
+	.print("started");
+	!move.
 	
-+!move : panicscale(P) & P > 0.5 <-
++!run: panicscale(_,P) <-
 	.print(P);
 	.print("moving!!!");
 	alert;
-	!move.
+	!run.
 
-+!move : panicscale(P) & P <= 0.5 <- 
++!move: panicscale(_,P) <- 
 	.print(P);
 	.print("randomly moving");
 	move;
 	!move.
 
-/*-!move<-
-	!move.*/
+-!move: not panicscale(_,_)  <-
+	.wait("+panicscale(X,Y)", 3000);
+	!move.
 	
++!nextplan: panicscale(_,P) & P <= 0.5 <-
+	!move.
+
++!nextplan: panicscale(_,P) & P > 0.5 <-
+	!run.
 		
-+accident : true <- 
++accident <-
+	.succeed_goal(move);
 	panicscale;
+	!nextplan;
 	.print("panicscale changed").
 
 +fire[source(Ag)] :  Ag \== self

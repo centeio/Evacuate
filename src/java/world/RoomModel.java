@@ -10,276 +10,383 @@ import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
 
 public class RoomModel extends GridWorldModel {
-	
+
 	public static int nAgents;
 	public static final int DOOR  = 16;
 	public static final int FIRE = 32;
 	public static final int FIRESPREAD = 40;
+
+	private static Random random = new Random(System.currentTimeMillis());
+
 	private Vector<Location> firePositions = new Vector<Location>();
 	private ArrayList<Double> panicscales;
 	private ArrayList<Double> selflessness;
 	private ArrayList<Double> injscales;
+	public ArrayList<Integer> ishelping;	
 
-	
-	
 	// singleton pattern
-    protected static RoomModel model = null;
+	protected static RoomModel model = null;
 
-    synchronized public static RoomModel create(int w, int h, int nbAgs, int nbSegs) {
-        if (model == null) {
-            model = new RoomModel(w, h, nbAgs + nbSegs);
-        }
-        nAgents = nbAgs;
-        
-        FileReader file;
-        try {
-        	file = new FileReader("worldMaps/Map1.txt");
-        	BufferedReader br = new BufferedReader(file);
-            
-            String line;
-            while ((line = br.readLine()) != null) {
-            	String[] lineValues = line.split("\\s+");
-            	
-            	switch(lineValues[0]) {
-	            	case "OBSTACLE":
-	            		model.add(RoomModel.OBSTACLE, Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2]));
-	            		break;
-	            	case "DOOR":
-	            		model.add(RoomModel.DOOR, Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2]));
-	            		break;
-	            	default:
-	            		break;
-            	}
-            }
-            br.close();
-        }catch(Exception e) {
-        	System.out.println(e.getMessage());
-        }
-        
-        //Random agent position
-        Random randomGenerator = new Random(System.currentTimeMillis());
+	synchronized public static RoomModel create(int w, int h, int nbAgs, int nbSegs) {
+		if (model == null) {
+			model = new RoomModel(w, h, nbAgs + nbSegs);
+		}
+		nAgents = nbAgs;
+
+		FileReader file;
+		try {
+			file = new FileReader("worldMaps/Map1.txt");
+			BufferedReader br = new BufferedReader(file);
+
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] lineValues = line.split("\\s+");
+
+				switch(lineValues[0]) {
+				case "OBSTACLE":
+					model.add(RoomModel.OBSTACLE, Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2]));
+					break;
+				case "DOOR":
+					model.add(RoomModel.DOOR, Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2]));
+					break;
+				default:
+					break;
+				}
+			}
+			br.close();
+		}catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+		//Random agent position
+		//    Random randomGenerator = new Random(System.currentTimeMillis());
 		int x, y;
-		
-        try {
-        	for(int i = 0; i < nbAgs + nbSegs; i++) {        		
-        		do {
-        			x = randomGenerator.nextInt(model.getWidth());
-        			y = randomGenerator.nextInt(model.getHeight());
-        		}while(!model.isFree(x,y));
-        		
-        		model.setAgPos(i, x, y);
-        		model.panicscales.add(i, 0.0);
-        		model.injscales.add(i, 0.0);
-        		model.setAgSelflessness(i, -1);
-        		
-        	}
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return model;
-    }
+
+		try {
+			for(int i = 0; i < nbAgs + nbSegs; i++) {        		
+				do {
+					x = random.nextInt(model.getWidth());
+					y = random.nextInt(model.getHeight());
+				}while(!model.isFree(x,y));
+
+				model.setAgPos(i, x, y);
+				model.panicscales.add(i, 0.0);
+				model.ishelping.add(i, -1);
+				model.injscales.add(i, 0.0);
+				model.setAgSelflessness(i, -1);
+
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return model;
+	}
 
 	private RoomModel(int w, int h, int nAgs) {
 		super(w, h, nAgs);
 		panicscales = new ArrayList<Double>();
 		selflessness = new ArrayList<Double>();
 		injscales = new ArrayList<Double>();
+		ishelping = new ArrayList<Integer>();
 
 
 	}
 
-	public double getAgSelflessness(int i) {
-		return selflessness.get(i);		
-	}
+	public double getAgSelflessness(int i) { return selflessness.get(i); }
+	public double getAgPanic(int i) { return panicscales.get(i); }
+	public double getAgInjScale(int i) { return injscales.get(i); }
+	public int getIsHelping(int i) { return ishelping.get(i); }
+	public int getnAgs() { return nAgents; }
 
-	public double getAgPanic(int i) {
-		return panicscales.get(i);		
-	}
-	
-	public double getAgInjScale(int i) {
-		return injscales.get(i);
-	}
-	
 	public void setAgSelflessness(int i, double j) {
 		try {
 			selflessness.set(i, j);		
 		}catch (IndexOutOfBoundsException e) {
 			selflessness.add(i,0.0);
-			selflessness("bob"+i);
+			selflessness("Bob"+i);
 		}
-	}
-
-	public double setAgPanic(int i, double panic) {
-		return panicscales.set(i, panic);		
-	}
-	
-	public double setAgInjScale(int i, double is) {
-		return injscales.set(i, is);		
 	}	
-	
-	public int getnAgs() {
-		return nAgents;
-	}
-	
+
+	public void setAgPanic(int i, double panic) { panicscales.set(i, panic); }	
+	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
+	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
+
+
 	public void panic(String agent) {
-		Random randomGenerator = new Random(System.currentTimeMillis());
-		double panic = randomGenerator.nextInt(10)/10.0;
+		double panic = random.nextInt(10)/10.0;
+		System.out.println(agent + " panic " + panic);
 		model.setAgPanic(model.getAgentByName(agent), panic);		
 	}
 
 	private void selflessness(String agent) {
-		Random randomGenerator = new Random(System.currentTimeMillis());
-		double selflessness = randomGenerator.nextInt(10)/10.0;
-		model.setAgPanic(model.getAgentByName(agent), selflessness);	
-
+		double selflessness = random.nextInt(10)/10.0;
+		model.setAgSelflessness(model.getAgentByName(agent), selflessness);	
 	} 
 
 	public void move_randomly(String agName, EscapeRoom escapeRoom) {
-		
+
 		int agent = getAgentByName(agName);
-		
+
 		Location r1 = getAgPos(agent);
-		Random randomGenerator = new Random(System.currentTimeMillis());
 		int randomX, randomY;
-		
+
 		do {
-			randomX = randomGenerator.nextInt(3) - 1;
-			randomY = randomGenerator.nextInt(3) - 1;
+			randomX = random.nextInt(3) - 1;
+			randomY = random.nextInt(3) - 1;
 		}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY));
-		
+
 		r1.x += randomX;
 		r1.y += randomY;
-		
-        setAgPos(agent, r1);
+
+		setAgPos(agent, r1);
 	}
 
-	
+
 	public void move_alert(String agName, EscapeRoom escapeRoom) {
 		int agent = getAgentByName(agName);
-		
+
 		Location r1 = getAgPos(agent);
 		r1.x++;
-		
+
 		if (r1.x == getWidth()) {
-            r1.x = 0;
-            r1.y++;
-        }
-        // finished searching the whole grid
-        if (r1.y == getHeight()) {
-            return;
-        }
-        setAgPos(agent, r1);		
+			r1.x = 0;
+			r1.y++;
+		}
+		// finished searching the whole grid
+		if (r1.y == getHeight()) {
+			return;
+		}
+		setAgPos(agent, r1);		
 	}
 
 	public void agentWait() {
-		
-		Random randomGenerator = new Random(System.currentTimeMillis());
+
 		try {
-			Thread.sleep(3000 + randomGenerator.nextInt(5)*1000);
+			Thread.sleep(3000 + random.nextInt(5)*1000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void create_fire() {
-		Random randomGenerator = new Random(System.currentTimeMillis());
 		int x, y;
-		
+
 		try {
-    		do {
-    			x = randomGenerator.nextInt(model.getWidth());
-    			y = randomGenerator.nextInt(model.getHeight());
-    		}while(!model.isFree(x,y));
-    		
-    		model.add(RoomModel.FIRE, x, y);
-    		
-    		firePositions.add(new Location(x,y));
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+			do {
+				x = random.nextInt(model.getWidth());
+				y = random.nextInt(model.getHeight());
+			}while(!model.isFree(x,y));
+
+			model.add(RoomModel.FIRE, x, y);
+
+			firePositions.add(new Location(x,y));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	public void environment() {
-		Random randomGenerator = new Random(System.currentTimeMillis());
 		int count = 0;
 		Vector<Location> copy = firePositions;
-		
+
 		for(int i = 0; i < copy.size(); i++) {
-						
+
 			//TOP
 			Location top = new Location(copy.get(i).x, copy.get(i).y - 1);
-			
+
 			if(model.isFreeOfObstacle(top) &&
 					model.isFree(FIRE, top)) {
-				
-				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+
+				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, top);
 					firePositions.add(top);
 				}
-				
+
 			} else
 				count++;
-			
-			
+
+
 			//RIGHT
 			Location right = new Location(copy.get(i).x + 1, copy.get(i).y);
-			
+
 			if(model.isFreeOfObstacle(right) &&
 					model.isFree(FIRE, right)) {
-				
-				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+
+				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, right);
 					firePositions.add(right);
 				}
-				
+
 			} else
 				count++;
-			
+
 			//BOTTOM
 			Location bottom = new Location(copy.get(i).x, copy.get(i).y + 1);
-			
+
 			if(model.isFreeOfObstacle(bottom) &&
 					model.isFree(FIRE, bottom)) {
-				
-				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+
+				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, bottom);
 					firePositions.add(bottom);
 				}
-				
+
 			} else
 				count++;
-			
+
 			//LEFT
 			Location left = new Location(copy.get(i).x - 1, copy.get(i).y);
-			
+
 			if(model.isFreeOfObstacle(left) &&
 					model.isFree(FIRE, left)) {
 
-				if(randomGenerator.nextInt(100) + 1 <= FIRESPREAD) {
+				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, left);
 					firePositions.add(left);
 				}
-				
+
 			} else
 				count++;
-			
+
 			if(count == 4)
 				firePositions.remove(i);
-			
+
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
-	
+
 	public int getAgentByName(String agName) {
 		return Integer.parseInt(agName.substring(3, agName.length()));
-	}	
+	}
+
+	public ArrayList<Location> doesAgSeeIt(int ag, Location p1){
+		Location p0 = getAgPos(ag);
+		
+	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
+	    int nx = Math.abs(dx), ny = Math.abs(dy);
+	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
+
+	    Location p = new Location(p0.x, p0.y);
+	    ArrayList<Location> points = new ArrayList<Location>();
+	    points.add(new Location(p.x,p.y));
+	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
+	        if ((0.5+ix) / nx < (0.5+iy) / ny) {
+	            // next step is horizontal
+	            p.x += sign_x;
+	            ix++;
+	        } else {
+	            // next step is vertical
+	            p.y += sign_y;
+	            iy++;
+	        }
+	        if(locationObstructed(p))
+	        	return null;
+	        points.add(new Location(p.x, p.y));
+	    }
+	    return points;		
+	}
+
+	private boolean locationObstructed(Location p) {
+		//TODO check if p is obstructed
+		return false;
+	}
+
+	public double agentSpeed(String ag) {
+		int i = getAgentByName(ag), ag2;
+		double is_aj = 0;
+		if((ag2 = ishelping.get(i)) != -1)
+			is_aj = injscales.get(ag2);
+
+		return ((1 - injscales.get(i))*panicscales.get(i)*4.0)/(1+is_aj);
+
+	}
+
+	public void updateInjuryScale() {
+
+		for(int i = 0; i < getnAgs() ; i++) {
+			Location agi = getAgPos(i);
+			double prob = 0;
+
+			//see if another agent is hurting, i.e. see if two are in the same cell
+			for(int j = i + 1; j < getnAgs() ; j++) {
+				Location agj = getAgPos(i);
+
+				if(agi.equals(agj)) {
+					//probability of i hurting j
+					prob = random.nextInt(10)/10.0;
+					if((1-helpful(i)) > prob) {
+						setAgInjScale(j, Math.min(injscales.get(j)*1.1,1));
+					}
+
+					//probability of j hurting i
+					prob = random.nextInt(10)/10.0;
+					if((1-helpful(j)) > prob) {
+						setAgInjScale(i, Math.min(injscales.get(i)*1.1,1));
+					}
+				}
+			}
+
+			//see if agent near to accident
+			for(int j=0; j<firePositions.size();j++) {
+				int dist;
+				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4){
+					setAgInjScale(i, injscales.get(i)+(1-dist*0.2));
+				}
+			}
+
+			//see if agent fell
+			prob = random.nextInt(100);
+			if(prob == 1) {
+				//agent falls
+				double hurts = 1.1;
+				if(random.nextInt(1) == 0) {
+					hurts = 1.2;
+				}
+				setAgInjScale(i, Math.min(injscales.get(i)*hurts,1));
+
+			}
+
+		}
+	}
+
+	private double helpful(int i) {
+		return (1 - panicscales.get(i))*selflessness.get(i);
+	}
+
+	public void updatePanic() {
+		//TODO if sees fire panicscale = 1
+		//TODO if security tells (probably for asl)	panicscale = 0.8	
+		//TODO if alarm rings panicscale between 0 and 0,5
+
+	}
+
+	public void updateHelp() {
+		for(int i = 0; i < getnAgs() ; i++) {
+			Location agi = getAgPos(i);
+			if(ishelping.get(i) != -1) {
+				double prob = 0;
+
+				//see who needs help
+				for(int j = i + 1; j < getnAgs(); j++) {
+					Location agj = getAgPos(i);
+
+					prob = random.nextInt(10)/10.0;
+					if(!ishelping.contains(j) && agentSpeed("Bob" + i)>agentSpeed("Bob" + j) && agi.distanceManhattan(agj) <= 5 && helpful(i) > prob) {
+						setIsHelping(i, j);
+						return;
+					}
+				}
+			}
+		}
+	}
+	
 }

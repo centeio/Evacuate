@@ -14,6 +14,7 @@
 	.print("finished waiting");
 	.broadcast(tell, accident).
 
+
 +fire[source(Ag)]
    :  Ag \== self
    <- .print("AAAAAHHHH! Agent ", Ag, " told me there's a fire");
