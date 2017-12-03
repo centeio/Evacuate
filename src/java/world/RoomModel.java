@@ -364,7 +364,6 @@ public class RoomModel extends GridWorldModel {
 
 	    Location p = new Location(p0.x, p0.y);
 	    ArrayList<Location> points = new ArrayList<Location>();
-	    points.add(new Location(p.x,p.y));
 	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
 	        if ((0.5+ix) / nx == (0.5+iy) / ny) {
 	            // next step is diagonal
@@ -385,7 +384,7 @@ public class RoomModel extends GridWorldModel {
 	        	return null;
 	        points.add(new Location(p.x, p.y));
 	    }
-	    return points.get(1);
+	    return points.get(0);
 	}
 
 	public double agentSpeed(String ag) {
@@ -430,7 +429,6 @@ public class RoomModel extends GridWorldModel {
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
 				if(dist<10 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
-					System.out.println("aqui");
 					setAgPanic(i, 1.0);
 				}
 			}
