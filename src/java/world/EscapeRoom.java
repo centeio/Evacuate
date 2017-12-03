@@ -5,7 +5,6 @@ import jason.asSyntax.*;
 import jason.environment.*;
 import jason.environment.grid.Location;
 
-import java.util.Random;
 import java.util.logging.*;
 
 public class EscapeRoom extends Environment {
@@ -18,6 +17,8 @@ public class EscapeRoom extends Environment {
     public static final Term    wait = Literal.parseLiteral("wait");
     public static final Term    alert = Literal.parseLiteral("alert");
     public static final Term    panic = Literal.parseLiteral("panicscale");
+    public static final Term    panicEnv = Literal.parseLiteral("panicscale(environment)");
+    public static final Term    panicSeg = Literal.parseLiteral("segtellFire");
     public static final Term    createFire = Literal.parseLiteral("createFire");
     public static final Term    environment = Literal.parseLiteral("environment");
     private static final int 	numberAgents = 10;
@@ -48,13 +49,19 @@ public class EscapeRoom extends Environment {
                 model.move_alert(agName, this);
             }
             else if (action.equals(panic)) {
-            	System.out.println("PANIC");
                 model.panic(agName);
             }
-            else if(action.equals(createFire))
+            else if(action.equals(createFire)) {
             	model.create_fire();
+            }
             else if(action.equals(environment)) {
             	model.environment();
+            }
+            else if(action.equals(panicEnv)) {
+            	model.panicEnv(agName);
+            }
+            else if(action.equals(panicSeg)) {
+            	model.panicSeg(agName);
             }
             else {
                 return false;
@@ -68,6 +75,7 @@ public class EscapeRoom extends Environment {
         try {
             Thread.sleep(1000);
         } catch (Exception e) {}
+        
         informAgsEnvironmentChanged();
         return true;
     }
@@ -75,10 +83,9 @@ public class EscapeRoom extends Environment {
 	
     void updatePercepts() {
         
-        model.updatePanic();
         model.updateInjuryScale();
         
-        for(int i=0; i<model.getnAgs(); i++) {
+        for(int i = 0; i < numberAgents; i++) {
         	clearPercepts("Bob"+i);
         	
         	//agent's location
@@ -88,25 +95,23 @@ public class EscapeRoom extends Environment {
         		agloc = model.getAgPos(model.ishelping.indexOf(i));
         	}
         	else {
-    	        agloc = model.getAgPos(0);
+    	        agloc = model.getAgPos(i);
         	}
 	        Literal pos = Literal.parseLiteral("pos(Bob" + i + "," + agloc.x + "," + agloc.y + ")");
 	        addPercept("Bob"+i, pos);
+	        
 	        //agent's panic scale
 	        double panic = model.getAgPanic(i);
 	        Literal agpanic = Literal.parseLiteral("panicscale(Bob"+i+","+ panic +")");
 	        addPercept("Bob"+i,agpanic);
+	        
 	        //agent's selflessness
 	        double selfln = model.getAgSelflessness(i);
 	        Literal agselfln = Literal.parseLiteral("selflessness(Bob"+i+","+ selfln +")");
 	        addPercept("Bob"+i,agselfln);
 	        //agent's injury scale if needed
-	        
         }
-        informAgsEnvironmentChanged();
     }
-
-
 
 	/** Called before the end of MAS execution */
     @Override

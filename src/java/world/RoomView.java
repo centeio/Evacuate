@@ -7,9 +7,6 @@ import jason.environment.grid.GridWorldView;
 
 public class RoomView extends GridWorldView {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private int numberAgents;
 	//private int numberSecurity;

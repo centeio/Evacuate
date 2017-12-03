@@ -59,7 +59,6 @@ public class RoomModel extends GridWorldModel {
 		}
 
 		//Random agent position
-		//    Random randomGenerator = new Random(System.currentTimeMillis());
 		int x, y;
 
 		try {
@@ -74,7 +73,6 @@ public class RoomModel extends GridWorldModel {
 				model.ishelping.add(i, -1);
 				model.injscales.add(i, 0.0);
 				model.setAgSelflessness(i, -1);
-
 			}
 
 		} catch (Exception e) {
@@ -90,8 +88,6 @@ public class RoomModel extends GridWorldModel {
 		selflessness = new ArrayList<Double>();
 		injscales = new ArrayList<Double>();
 		ishelping = new ArrayList<Integer>();
-
-
 	}
 
 	public double getAgSelflessness(int i) { return selflessness.get(i); }
@@ -117,7 +113,7 @@ public class RoomModel extends GridWorldModel {
 	public void panic(String agent) {
 		double panic = random.nextInt(10)/10.0;
 		System.out.println(agent + " panic " + panic);
-		model.setAgPanic(model.getAgentByName(agent), panic);		
+		model.setAgPanic(model.getAgentByName(agent), panic);
 	}
 
 	private void selflessness(String agent) {
@@ -171,6 +167,9 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
+	/**
+	 * Creates a generic accident (in this case, represented by fire) in a random location.
+	 */
 	public void create_fire() {
 		int x, y;
 
@@ -189,7 +188,25 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
+	/**
+	 * Environment change that happens each cycle.
+	 * 1. Fire spread
+	 * TO-DO: MORE.
+	 */
 	public void environment() {
+		spreadFire();
+
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Spreads the fire each cycle with a probability of FIRESPREAD.	
+	 */
+	private void spreadFire() {
 		int count = 0;
 		Vector<Location> copy = firePositions;
 
@@ -254,21 +271,19 @@ public class RoomModel extends GridWorldModel {
 
 			if(count == 4)
 				firePositions.remove(i);
-
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 		}
-
 	}
 
+	/**
+	 * Gets the model agent index given its name.
+	 * @param agName Agent.
+	 * @return Index of the agent in the model.
+	 */
 	public int getAgentByName(String agName) {
 		return Integer.parseInt(agName.substring(3, agName.length()));
 	}
 
-	public ArrayList<Location> doesAgSeeIt(int ag, Location p1){
+	public ArrayList<Location> doesAgSeeIt(int ag, Location p1) {
 		Location p0 = getAgPos(ag);
 		
 	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
@@ -362,13 +377,6 @@ public class RoomModel extends GridWorldModel {
 		return (1 - panicscales.get(i))*selflessness.get(i);
 	}
 
-	public void updatePanic() {
-		//TODO if sees fire panicscale = 1
-		//TODO if security tells (probably for asl)	panicscale = 0.8	
-		//TODO if alarm rings panicscale between 0 and 0,5
-
-	}
-
 	public void updateHelp() {
 		for(int i = 0; i < getnAgs() ; i++) {
 			Location agi = getAgPos(i);
@@ -388,5 +396,39 @@ public class RoomModel extends GridWorldModel {
 			}
 		}
 	}
-	
+
+	/**
+	 * Changes the panic scale of every agent after hearing the alarm ring.
+	 * @param agName Environment agent that triggers this event.
+	 */
+	public void panicEnv(String agName) {
+		
+		if(random.nextInt(100) + 1 <= 25)
+			panicscales.set(getAgentByName(agName), 1.0);
+		else {
+			if(random.nextInt(100) + 1 <= 45) {
+				double panic = random.nextInt(10)/10.0;
+				
+				if(panicscales.get(getAgentByName(agName)) < panic)
+					panicscales.set(getAgentByName(agName), panic);
+			}
+		}
+	}
+
+	/**
+	 * Changes the panic scale of every agent if a security guard is nearby. The guard assures the agent
+	 *  an accident is happening.
+	 * @param agName Security agent that triggers this event.
+	 */
+	public void panicSeg(String agName) {
+		
+		for(int i = 0; i < nAgents ; i++) {
+			if(getAgPos(getAgentByName(agName)).distanceManhattan(getAgPos(i)) <= 5) {
+				System.out.println(agName + " telling Bob" + i + " there's a fire.");
+				
+				if(panicscales.get(i) < 0.8)
+					panicscales.set(i, 0.8);
+			}
+		}	
+	}
 }

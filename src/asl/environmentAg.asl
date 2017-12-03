@@ -11,6 +11,7 @@
 +!start : true <- 
 	myLib.createagents(10, 2);
 	createFire;
+	.broadcast(tell, accidentEnv);
 	!continue.
 	
 +!continue : true <-
