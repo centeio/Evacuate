@@ -28,11 +28,20 @@ public class RoomView extends GridWorldView {
         case RoomModel.FIRE:
         	drawFire(g,x,y);
         	break;
+        case RoomModel.MAINDOOR:
+        	drawMainDoor(g,x,y);
+        	break;
         }
     }
 	
 	public void drawDoor(Graphics g, int x, int y) {
         g.setColor(Color.GREEN);
+        g.drawRect(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
+        g.fillRect(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
+    }
+	
+	public void drawMainDoor(Graphics g, int x, int y) {
+        g.setColor(Color.RED);
         g.drawRect(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
         g.fillRect(x * cellSizeW + 2, y * cellSizeH + 2, cellSizeW - 4, cellSizeH - 4);
     }

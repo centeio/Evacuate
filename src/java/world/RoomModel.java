@@ -12,13 +12,16 @@ import jason.environment.grid.Location;
 public class RoomModel extends GridWorldModel {
 
 	public static int nAgents;
-	public static final int DOOR  = 16;
+	public static final int DOOR  = 8;
+	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
 	public static final int FIRESPREAD = 40;
 
 	private static Random random = new Random(System.currentTimeMillis());
 
 	private Vector<Location> firePositions = new Vector<Location>();
+	private Vector<Location> doorsPositions = new Vector<Location>();
+	private Vector<Location> mainDoorsPositions = new Vector<Location>();
 	private ArrayList<Double> panicscales;
 	private ArrayList<Double> selflessness;
 	private ArrayList<Double> injscales;
@@ -48,6 +51,11 @@ public class RoomModel extends GridWorldModel {
 					break;
 				case "DOOR":
 					model.add(RoomModel.DOOR, Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2]));
+					model.doorsPositions.addElement(new Location(Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2])));
+					break;
+				case "MAINDOOR":
+					model.add(RoomModel.MAINDOOR, Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2]));
+					model.mainDoorsPositions.addElement(new Location(Integer.parseInt(lineValues[1]), Integer.parseInt(lineValues[2])));
 					break;
 				default:
 					break;
@@ -260,7 +268,6 @@ public class RoomModel extends GridWorldModel {
 				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, top);
 					firePositions.add(top);
-					System.out.println("Added fire cell");
 				}
 
 			} else
@@ -276,7 +283,6 @@ public class RoomModel extends GridWorldModel {
 				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, right);
 					firePositions.add(right);
-					System.out.println("Added fire cell");
 				}
 
 			} else
@@ -291,7 +297,6 @@ public class RoomModel extends GridWorldModel {
 				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, bottom);
 					firePositions.add(bottom);
-					System.out.println("Added fire cell");
 				}
 
 			} else
@@ -306,7 +311,6 @@ public class RoomModel extends GridWorldModel {
 				if(random.nextInt(100) + 1 <= FIRESPREAD) {
 					model.add(FIRE, left);
 					firePositions.add(left);
-					System.out.println("Added fire cell");
 				}
 
 			} else
@@ -338,7 +342,6 @@ public class RoomModel extends GridWorldModel {
 		
 		return objs;
 	}
-
 
 	public Location doesAgSeeIt(int ag, Location p1) {
 	    return doesAgSeeIt(getAgPos(ag), p1);
