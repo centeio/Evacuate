@@ -9,3 +9,6 @@
 /* Plans */
 
 +!start : true <- .print("hello world.").
+
++accidentEnv <-
+	segtellFire.

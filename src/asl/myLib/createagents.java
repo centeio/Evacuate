@@ -25,7 +25,7 @@ public class createagents extends DefaultInternalAction {
 
             RuntimeServicesInfraTier rs = ts.getUserAgArch().getRuntimeServices();
             String name = "Bob"+i;
-            name = rs.createAgent(name, "ag1.asl", null, null, null, s, ts.getAg());
+            name = rs.createAgent(name, "common.asl", null, null, null, s, ts.getAg());
             rs.startAgent(name);
         }
         
@@ -34,7 +34,7 @@ public class createagents extends DefaultInternalAction {
 
             RuntimeServicesInfraTier rs = ts.getUserAgArch().getRuntimeServices();
             String name = "Seg"+i;
-            name = rs.createAgent(name, "seg.asl", null, null, null, s, ts.getAg());
+            name = rs.createAgent(name, "security.asl", null, null, null, s, ts.getAg());
             rs.startAgent(name);
         }
         

@@ -6,7 +6,6 @@ MAS escape {
 
 	agents:
 		environmentAg;
-		ag2;
 
 	aslSourcePath:
 		"src/asl";

@@ -17,6 +17,10 @@
 	.print("moving!!!");
 	alert;
 	!run.
+	
++!run: not panicscale(_,_)  <-
+	.wait("+panicscale(X,Y)", 500);
+	!run.
 
 +!move: panicscale(_,P) <- 
 	.print(P);
@@ -24,8 +28,8 @@
 	move;
 	!move.
 
--!move: not panicscale(_,_)  <-
-	.wait("+panicscale(X,Y)", 3000);
++!move: not panicscale(_,_)  <-
+	.wait("+panicscale(X,Y)", 500);
 	!move.
 	
 +!nextplan: panicscale(_,P) & P <= 0.5 <-
@@ -33,12 +37,21 @@
 
 +!nextplan: panicscale(_,P) & P > 0.5 <-
 	!run.
+	
++!nextplan: not panicscale(_,P) <-
+	.wait("+panicscale(X,Y)", 500);
+	!nextplan.
 		
 +accident <-
 	.succeed_goal(move);
 	panicscale;
 	!nextplan;
 	.print("panicscale changed").
-
-+fire[source(Ag)] :  Ag \== self
-<- .print("Agent ", Ag, " said there's a fire!! Run!!").
+	
++accidentEnv <-
+	.succeed_goal(move);
+	panicscale(environment);
+	!nextplan;
+	.print("panicscale changed").
+	
+	
