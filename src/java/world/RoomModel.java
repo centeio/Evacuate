@@ -161,52 +161,36 @@ public class RoomModel extends GridWorldModel {
 			firedist = fire.distanceManhattan(oldloc);
 		
 		newloc = new Location(oldloc.x-1,oldloc.y);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && !model.isFree(FIRE, newloc)) {
+		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			if(newfire == null) {
-				setAgPos(agent, newloc);
-				return;
-			}
-			if(!(newfire.distanceManhattan(newloc) < firedist)) {
+			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
 			}
 		}
 		
 		newloc = new Location(oldloc.x+1,oldloc.y);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && !model.isFree(FIRE, newloc)) {
+		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			if(newfire == null) {
-				setAgPos(agent, newloc);
-				return;
-			}
-			if(!(newfire.distanceManhattan(newloc) < firedist)) {
+			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
 			}
 		}
 			
 		newloc = new Location(oldloc.x,oldloc.y-1);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && !model.isFree(FIRE, newloc)) {
+		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			if(newfire == null) {
-				setAgPos(agent, newloc);
-				return;
-			}
-			if(!(newfire.distanceManhattan(newloc) < firedist)) {
+			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
 			}
 		}
 		
 		newloc = new Location(oldloc.x,oldloc.y+1);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && !model.isFree(FIRE, newloc)) {
+		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			if(newfire == null) {
-				setAgPos(agent, newloc);
-				return;
-			}
-			if(!(newfire.distanceManhattan(newloc) < firedist)) {
+			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
 			}
@@ -361,7 +345,10 @@ public class RoomModel extends GridWorldModel {
 	    return points.get(1);		
 	}
 
-	public Location doesAgSeeIt( Location p0, Location p1){		
+	public Location doesAgSeeIt(Location p0, Location p1){
+		if(p0.equals(p1))
+			return p0;
+		
 	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
 	    int nx = Math.abs(dx), ny = Math.abs(dy);
 	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
@@ -430,11 +417,13 @@ public class RoomModel extends GridWorldModel {
 			//see if agent near to accident
 			for(int j=0; j<firePositions.size();j++) {
 				int dist;
-				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4){
-					setAgInjScale(i, injscales.get(i)+(1-dist*0.2));
+				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null){
+					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
-				if(dist<10)
+				if(dist<10 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
+					System.out.println("aqui");
 					setAgPanic(i, 1.0);
+				}
 			}
 
 			//see if agent fell
