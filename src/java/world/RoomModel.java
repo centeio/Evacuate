@@ -370,7 +370,13 @@ public class RoomModel extends GridWorldModel {
 	    ArrayList<Location> points = new ArrayList<Location>();
 	    points.add(new Location(p.x,p.y));
 	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
-	        if ((0.5+ix) / nx < (0.5+iy) / ny) {
+	        if ((0.5+ix) / nx == (0.5+iy) / ny) {
+	            // next step is diagonal
+	            p.x += sign_x;
+	            p.y += sign_y;
+	            ix++;
+	            iy++;
+	        } else if ((0.5+ix) / nx < (0.5+iy) / ny) {
 	            // next step is horizontal
 	            p.x += sign_x;
 	            ix++;
@@ -383,7 +389,7 @@ public class RoomModel extends GridWorldModel {
 	        	return null;
 	        points.add(new Location(p.x, p.y));
 	    }
-	    return points.get(1);		
+	    return points.get(1);
 	}
 
 	public double agentSpeed(String ag) {
