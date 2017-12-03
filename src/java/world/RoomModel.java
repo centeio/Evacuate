@@ -201,7 +201,6 @@ public class RoomModel extends GridWorldModel {
 		}		
 	}
 
-
 	public void agentWait() {
 
 		try {
@@ -212,6 +211,7 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
+	
 	/**
 	 * Creates a generic accident (in this case, represented by fire) in a random location.
 	 */
@@ -234,6 +234,7 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
+	
 	/**
 	 * Environment change that happens each cycle.
 	 * 1. Fire spread
@@ -248,6 +249,7 @@ public class RoomModel extends GridWorldModel {
 			e.printStackTrace();
 		}
 	}
+	
 	
 	/**
 	 * Spreads the fire each cycle with a probability of FIRESPREAD.	
@@ -321,6 +323,7 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
+	
 	/**
 	 * Gets the model agent index given its name.
 	 * @param agName Agent.
@@ -329,6 +332,7 @@ public class RoomModel extends GridWorldModel {
 	public int getAgentByName(String agName) {
 		return Integer.parseInt(agName.substring(3, agName.length()));
 	}
+	
 	
 	public ArrayList<Location> find(int obj){
 		ArrayList<Location> objs = new ArrayList<Location>();
@@ -343,10 +347,12 @@ public class RoomModel extends GridWorldModel {
 		return objs;
 	}
 
+	
 	public Location doesAgSeeIt(int ag, Location p1) {
 	    return doesAgSeeIt(getAgPos(ag), p1);
 	}
 
+	
 	public Location doesAgSeeIt(Location p0, Location p1) {
 		
 		if(p0.equals(p1))
