@@ -356,34 +356,11 @@ public class RoomModel extends GridWorldModel {
 	}
 
 
-	public Location doesAgSeeIt(int ag, Location p1){
-		Location p0 = getAgPos(ag);
-		
-	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
-	    int nx = Math.abs(dx), ny = Math.abs(dy);
-	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
-
-	    Location p = new Location(p0.x, p0.y);
-	    ArrayList<Location> points = new ArrayList<Location>();
-	    points.add(new Location(p.x,p.y));
-	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
-	        if ((0.5+ix) / nx < (0.5+iy) / ny) {
-	            // next step is horizontal
-	            p.x += sign_x;
-	            ix++;
-	        } else {
-	            // next step is vertical
-	            p.y += sign_y;
-	            iy++;
-	        }
-	        if(!model.isFreeOfObstacle(p) || !model.isFree(FIRE, p))
-	        	return null;
-	        points.add(new Location(p.x, p.y));
-	    }
-	    return points.get(1);		
+	public Location doesAgSeeIt(int ag, Location p1) {		
+	    return doesAgSeeIt(getAgPos(ag), p1);
 	}
 
-	public Location doesAgSeeIt( Location p0, Location p1){		
+	public Location doesAgSeeIt(Location p0, Location p1){		
 	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
 	    int nx = Math.abs(dx), ny = Math.abs(dy);
 	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
