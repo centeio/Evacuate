@@ -9,7 +9,6 @@
 /* Plans */
 
 +!start <-
-	.print("started");
 	!move.
 	
 +!run: panicscale(_,P) <-
@@ -41,17 +40,16 @@
 +!nextplan: not panicscale(_,P) <-
 	.wait("+panicscale(X,Y)", 1000);
 	!nextplan.
-		
-+accident <-
-	.succeed_goal(move);
-	panicscale;
-	!nextplan;
-	.print("panicscale changed").
 	
 +accidentEnv <-
 	.succeed_goal(move);
 	panicscale(environment);
-	!nextplan;
-	.print("panicscale changed").
+	!nextplan.
+	
++injuryscale(X,Y) : Y == 1 <-
+	.my_name(N);
+	killagent;
+	.kill_agent(N).
+	
 	
 	

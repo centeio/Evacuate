@@ -12,6 +12,7 @@ import jason.environment.grid.Location;
 public class RoomModel extends GridWorldModel {
 
 	public static int nAgents;
+	public static int nSecurity;
 	public static final int DOOR  = 8;
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
@@ -22,6 +23,7 @@ public class RoomModel extends GridWorldModel {
 	private Vector<Location> firePositions = new Vector<Location>();
 	private Vector<Location> doorsPositions = new Vector<Location>();
 	private Vector<Location> mainDoorsPositions = new Vector<Location>();
+	private Vector<Boolean> agentDead = new Vector<Boolean>();
 	private ArrayList<Double> panicscales;
 	private ArrayList<Double> selflessness;
 	private ArrayList<Double> injscales;
@@ -35,6 +37,7 @@ public class RoomModel extends GridWorldModel {
 			model = new RoomModel(w, h, nbAgs + nbSegs);
 		}
 		nAgents = nbAgs;
+		nSecurity = nbSegs;
 
 		FileReader file;
 		try {
@@ -81,6 +84,7 @@ public class RoomModel extends GridWorldModel {
 				model.ishelping.add(i, -1);
 				model.injscales.add(i, 0.0);
 				model.setAgSelflessness(i, -1);
+				model.agentDead.add(i, false);
 			}
 
 		} catch (Exception e) {
@@ -104,6 +108,8 @@ public class RoomModel extends GridWorldModel {
 	public int getIsHelping(int i) { return ishelping.get(i); }
 	public int getnAgs() { return nAgents; }
 	public int[][] getMap() { return model.data; }
+	public Boolean isDead(String agName) { return agentDead.get(getAgentByName(agName)); }
+	public boolean isDead(int id) { return agentDead.get(id); }
 
 	public void setAgSelflessness(int i, double j) {
 		try {
@@ -130,25 +136,30 @@ public class RoomModel extends GridWorldModel {
 		model.setAgSelflessness(model.getAgentByName(agent), selflessness);	
 	} 
 
-	public void move_randomly(String agName, EscapeRoom escapeRoom) {
+	public void move_randomly(String agName) {
 
 		int agent = getAgentByName(agName);
+		
+		if(agent < nAgents) {
 
-		Location r1 = getAgPos(agent);
-		int randomX, randomY;
-
-		do {
-			randomX = random.nextInt(3) - 1;
-			randomY = random.nextInt(3) - 1;
-		}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY) || !model.isFree(FIRE,new Location(r1.x + randomX,  r1.y + randomY)));
-
-		r1.x += randomX;
-		r1.y += randomY;
-
-		setAgPos(agent, r1);
+			Location r1 = getAgPos(agent);
+			int randomX, randomY;
+	
+			do {
+				randomX = random.nextInt(3) - 1;
+				randomY = random.nextInt(3) - 1;
+			}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY) || !model.isFree(FIRE,new Location(r1.x + randomX,  r1.y + randomY)));
+	
+			r1.x += randomX;
+			r1.y += randomY;
+	
+			setAgPos(agent, r1);
+		} else {
+			setAgPos(agent, getAgPos(agent));
+		}
 	}
 
-	public void move_alert(String agName, EscapeRoom escapeRoom) {
+	public void move_alert(String agName) {
 		int agent = getAgentByName(agName);
 		Location oldloc = getAgPos(agent);
 		Location newloc = null;
@@ -206,7 +217,7 @@ public class RoomModel extends GridWorldModel {
 				setAgPos(agent, newloc);
 				return;
 			}
-		}		
+		}
 	}
 
 	public void agentWait() {
@@ -401,14 +412,14 @@ public class RoomModel extends GridWorldModel {
 
 	}
 
-	public void updateInjuryScale() {
+	public void updateInjuryPanicScale() {
 
-		for(int i = 0; i < getnAgs() ; i++) {
+		for(int i = 0; i < nAgents + nSecurity ; i++) {
 			Location agi = getAgPos(i);
 			double prob = 0;
 
 			//see if another agent is hurting, i.e. see if two are in the same cell
-			for(int j = i + 1; j < getnAgs() ; j++) {
+			for(int j = i + 1; j < nAgents + nSecurity ; j++) {
 				Location agj = getAgPos(i);
 
 				if(agi.equals(agj)) {
@@ -426,15 +437,18 @@ public class RoomModel extends GridWorldModel {
 				}
 			}
 
-			//see if agent near to accident
-			for(int j=0; j < firePositions.size(); j++) {
+			//see if agent near to accident or inside the accident
+			for(int j = 0; j < firePositions.size(); j++) {
 				int dist;
 				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null){
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
-				if(dist<10 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
+				if(doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
 					setAgPanic(i, 1.0);
 				}
+				
+				if(agi == firePositions.get(j))
+					setAgInjScale(i, 1.0);
 			}
 
 			//see if agent fell
@@ -446,9 +460,7 @@ public class RoomModel extends GridWorldModel {
 					hurts = 1.2;
 				}
 				setAgInjScale(i, Math.min(injscales.get(i)*hurts,1));
-
 			}
-
 		}
 	}
 
@@ -495,15 +507,21 @@ public class RoomModel extends GridWorldModel {
 	 */
 	public void panicEnv(String agName) {
 		
-		if(random.nextInt(100) + 1 <= 25)
-			panicscales.set(getAgentByName(agName), 1.0);
-		else {
-			if(random.nextInt(100) + 1 <= 45) {
-				double panic = random.nextInt(10)/10.0;
-				
-				if(panicscales.get(getAgentByName(agName)) < panic)
-					panicscales.set(getAgentByName(agName), panic);
+		int agent = getAgentByName(agName);
+		
+		if(agent < nAgents) {
+			if(random.nextInt(100) + 1 <= 25)
+				panicscales.set(agent, 1.0);
+			else {
+				if(random.nextInt(100) + 1 <= 45) {
+					double panic = random.nextInt(10)/10.0;
+					
+					if(panicscales.get(agent) < panic)
+						panicscales.set(agent, panic);
+				}
 			}
+		} else {
+			panicscales.set(agent, 1.0);
 		}
 	}
 
@@ -522,5 +540,9 @@ public class RoomModel extends GridWorldModel {
 					panicscales.set(i, 0.8);
 			}
 		}	
+	}
+
+	public void kill(String agName) {
+		agentDead.set(getAgentByName(agName), true);
 	}
 }

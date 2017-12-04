@@ -16,7 +16,6 @@ public class RoomView extends GridWorldView {
 		setVisible(true);
 		setSize(1200, 600);
 		this.numberAgents = numberAgents;
-		//this.numberSecurity = numberSecurity;
 	}
 	
 	@Override
@@ -54,20 +53,22 @@ public class RoomView extends GridWorldView {
 	
 	@Override
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
-		String label;
 		
-		if(id >= numberAgents) {
-			c = Color.BLUE;
-			label = "S" + (id+1);
+		if(!((RoomModel)this.model).isDead(id)) {
+			String label;
+			
+			if(id >= numberAgents) {
+				c = Color.BLUE;
+				label = "S" + (id+1);
+			}
+			else {
+				c = Color.PINK;
+				label = "P" + (id+1);
+			}
+			super.drawAgent(g, x, y, c, -1);
+			
+			g.setColor(Color.black);
+			super.drawString(g, x, y, defaultFont, label);
 		}
-		else {
-			c = Color.PINK;
-			label = "P" + (id+1);
-		}
-		super.drawAgent(g, x, y, c, -1);
-		
-		g.setColor(Color.black);
-		super.drawString(g, x, y, defaultFont, label);
     }
-
 }
