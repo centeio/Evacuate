@@ -11,4 +11,8 @@
 +!start : true <- .print("hello world.").
 
 +accidentEnv <-
-	segtellFire.
+	!tellFire.
+
++!tellFire : true <-
+	segtellFire;
+	!tellFire.

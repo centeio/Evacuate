@@ -152,7 +152,14 @@ public class RoomModel extends GridWorldModel {
 		Location oldloc = getAgPos(agent);
 		Location newloc = null;
 		
-		for(Location door : find(DOOR)) {
+		for(Location door : mainDoorsPositions) {
+			if(door.distanceManhattan(oldloc) <= 10 && (newloc = doesAgSeeIt(agent, door)) != null) {
+				setAgPos(agent,newloc);
+				return;
+			}
+		}
+		
+		for(Location door : doorsPositions) {
 			if(door.distanceManhattan(oldloc) <= 10 && (newloc = doesAgSeeIt(agent, door)) != null) {
 				setAgPos(agent,newloc);
 				return;
@@ -165,8 +172,9 @@ public class RoomModel extends GridWorldModel {
 			firedist = fire.distanceManhattan(oldloc);
 		
 		newloc = new Location(oldloc.x-1,oldloc.y);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
+		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
+			System.out.println(agName + " Firedist left: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
@@ -174,17 +182,19 @@ public class RoomModel extends GridWorldModel {
 		}
 		
 		newloc = new Location(oldloc.x+1,oldloc.y);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
+		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
+			System.out.println(agName + " Firedist right: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
 			}
 		}
-			
+		
 		newloc = new Location(oldloc.x,oldloc.y-1);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
+		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
+			System.out.println(agName + " Firedist top: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
@@ -192,8 +202,9 @@ public class RoomModel extends GridWorldModel {
 		}
 		
 		newloc = new Location(oldloc.x,oldloc.y+1);
-		if(newloc.x < 0 && newloc.x > getWidth() && newloc.y < 0 && newloc.y > getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
+		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
+			System.out.println(agName + " Firedist bottom: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgPos(agent, newloc);
 				return;
@@ -206,11 +217,9 @@ public class RoomModel extends GridWorldModel {
 		try {
 			Thread.sleep(3000 + random.nextInt(5)*1000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
-
 	
 	/**
 	 * Creates a generic accident (in this case, represented by fire) in a random location.
@@ -233,7 +242,6 @@ public class RoomModel extends GridWorldModel {
 			e.printStackTrace();
 		}
 	}
-
 	
 	/**
 	 * Environment change that happens each cycle.
@@ -337,8 +345,8 @@ public class RoomModel extends GridWorldModel {
 	public ArrayList<Location> find(int obj){
 		ArrayList<Location> objs = new ArrayList<Location>();
 		
-		for(int i = 0; i<model.data.length;i++) {
-			for(int j = 0; j<model.data[i].length;j++) {
+		for(int i = 0; i < model.data.length; i++) {
+			for(int j = 0; j < model.data[i].length; j++) {
 				if(data[i][j] == obj)
 					objs.add(new Location(i,j));
 			}
@@ -352,7 +360,6 @@ public class RoomModel extends GridWorldModel {
 	    return doesAgSeeIt(getAgPos(ag), p1);
 	}
 
-	
 	public Location doesAgSeeIt(Location p0, Location p1) {
 		
 		if(p0.equals(p1))
@@ -452,10 +459,10 @@ public class RoomModel extends GridWorldModel {
 		int dist = 11;
 		Location fire = null;
 
-		for(int j=0; j<firePositions.size();j++) {
-			if(l.distanceManhattan(firePositions.elementAt(j)) < dist && (doesAgSeeIt(l, firePositions.elementAt(j)) != null)){
-				dist = l.distanceManhattan(firePositions.elementAt(j));
-				fire = firePositions.elementAt(j);
+		for(int i = 0; i < firePositions.size(); i++) {
+			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && (doesAgSeeIt(l, firePositions.elementAt(i)) != null)) {
+				dist = l.distanceManhattan(firePositions.elementAt(i));
+				fire = firePositions.elementAt(i);
 			}
 		}
 		return fire;
