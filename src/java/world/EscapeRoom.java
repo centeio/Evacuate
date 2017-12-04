@@ -21,6 +21,7 @@ public class EscapeRoom extends Environment {
     public static final Term    panicSeg = Literal.parseLiteral("segtellFire");
     public static final Term    createFire = Literal.parseLiteral("createFire");
     public static final Term    environment = Literal.parseLiteral("environment");
+    public static final Term    start = Literal.parseLiteral("start");
     private static final int 	numberAgents = 10;
     private static final int 	numberSecurity = 2;
 
@@ -51,7 +52,7 @@ public class EscapeRoom extends Environment {
             else if (action.equals(panic)) {
                 model.panic(agName);
             }
-            else if(action.equals(createFire)) {
+            else if(action.equals(createFire)) {            	
             	model.create_fire();
             }
             else if(action.equals(environment)) {
@@ -62,6 +63,8 @@ public class EscapeRoom extends Environment {
             }
             else if(action.equals(panicSeg)) {
             	model.panicSeg(agName);
+            } else if(action.equals(start)) {
+            	System.out.println("Starting system.");
             }
             else {
                 return false;

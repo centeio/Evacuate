@@ -10,6 +10,8 @@
 
 +!start : true <- 
 	myLib.createagents(10, 2);
+	start;
+	.wait(5000);
 	createFire;
 	.broadcast(tell, accidentEnv);
 	!continue.
