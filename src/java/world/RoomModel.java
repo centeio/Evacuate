@@ -12,10 +12,12 @@ import jason.environment.grid.Location;
 public class RoomModel extends GridWorldModel {
 
 	public static int nAgents;
+	public static int nSecurity;
 	public static final int DOOR  = 8;
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
 	public static final int FIRESPREAD = 40;
+	private static final double MAXSPEED = 4.0;
 
 	private static Random random = new Random(System.currentTimeMillis());
 
@@ -24,10 +26,11 @@ public class RoomModel extends GridWorldModel {
 	private ArrayList<Integer> doorsDistance = new ArrayList<Integer>();
 	private Vector<Location> mainDoorsPositions = new Vector<Location>();
 	private ArrayList<ArrayList<Boolean>> doorsVisited = new ArrayList<ArrayList<Boolean>>();
+	private Vector<Boolean> agentDead = new Vector<Boolean>();
 	private ArrayList<Double> panicscales;
 	private ArrayList<Double> selflessness;
 	private ArrayList<Double> injscales;
-	public ArrayList<Integer> ishelping;	
+	public ArrayList<Integer> ishelping;
 
 	// singleton pattern
 	protected static RoomModel model = null;
@@ -37,6 +40,7 @@ public class RoomModel extends GridWorldModel {
 			model = new RoomModel(w, h, nbAgs + nbSegs);
 		}
 		nAgents = nbAgs;
+		nSecurity = nbSegs;
 
 		FileReader file;
 		try {
@@ -105,6 +109,7 @@ public class RoomModel extends GridWorldModel {
 				for(int j=0; j<model.doorsPositions.size();j++) {
 					model.doorsVisited.get(i).add(j,false);
 				}
+				model.agentDead.add(i, false);
 			}
 
 		} catch (Exception e) {
@@ -127,6 +132,9 @@ public class RoomModel extends GridWorldModel {
 	public double getAgInjScale(int i) { return injscales.get(i); }
 	public int getIsHelping(int i) { return ishelping.get(i); }
 	public int getnAgs() { return nAgents; }
+	public int[][] getMap() { return model.data; }
+	public Boolean isDead(String agName) { return agentDead.get(getAgentByName(agName)); }
+	public boolean isDead(int id) { return agentDead.get(id); }
 
 	public void setAgSelflessness(int i, double j) {
 		try {
@@ -136,11 +144,9 @@ public class RoomModel extends GridWorldModel {
 			selflessness("Bob"+i);
 		}
 	}	
-
 	public void setAgPanic(int i, double panic) { panicscales.set(i, panic); }	
 	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
 	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
-
 
 	public void panic(String agent) {
 		double panic = random.nextInt(10)/10.0;
@@ -153,24 +159,30 @@ public class RoomModel extends GridWorldModel {
 		model.setAgSelflessness(model.getAgentByName(agent), selflessness);	
 	} 
 
-	public void move_randomly(String agName, EscapeRoom escapeRoom) {
+	public void move_randomly(String agName) {
 
 		int agent = getAgentByName(agName);
-
-		Location r1 = getAgPos(agent);
-		int randomX, randomY;
-
-		do {
-			randomX = random.nextInt(3) - 1;
-			randomY = random.nextInt(3) - 1;
-		}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY) || !model.isFree(FIRE,new Location(r1.x + randomX,  r1.y + randomY)));
-
-		r1.x += randomX;
-		r1.y += randomY;
-
-		setAgentPos(agent, r1);
-	}
+		
+		if(agent < nAgents) {
+			
+			Location r1 = getAgPos(agent);
+			int randomX, randomY;
 	
+			do {
+				randomX = random.nextInt(3) - 1;
+				randomY = random.nextInt(3) - 1;
+			}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY) || !model.isFree(FIRE,new Location(r1.x + randomX,  r1.y + randomY)));
+	
+			r1.x += randomX;
+			r1.y += randomY;
+	
+			setAgentPos(agent, r1);
+		} else {
+			setAgentPos(agent, getAgPos(agent));
+		}
+	}
+
+
 	public void setAgentPos(int i, Location l) {
 		int d = 0;
 		setAgPos(i,l);
@@ -179,16 +191,15 @@ public class RoomModel extends GridWorldModel {
 				model.doorsVisited.get(i).set(d, true);
 			}
 		}
-	}
 
-	public void move_alert(String agName, EscapeRoom escapeRoom) {
+	}
+	public void move_alert(String agName) {
 		int agent = getAgentByName(agName);
 		Location oldloc = getAgPos(agent);
 		Location newloc = null;
 				
 		for(Location door : mainDoorsPositions) {
 			if((newloc = doesAgSeeIt(agent, door)) != null) {
-				System.out.println(newloc + "aqui com new loc para main door");
 				setAgentPos(agent,newloc);
 				return;
 			}
@@ -218,7 +229,6 @@ public class RoomModel extends GridWorldModel {
 		newloc = new Location(oldloc.x-1,oldloc.y);
 		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			System.out.println(agName + " Firedist left: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgentPos(agent, newloc);
 				return;
@@ -228,7 +238,6 @@ public class RoomModel extends GridWorldModel {
 		newloc = new Location(oldloc.x+1,oldloc.y);
 		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			System.out.println(agName + " Firedist right: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgentPos(agent, newloc);
 				return;
@@ -238,7 +247,6 @@ public class RoomModel extends GridWorldModel {
 		newloc = new Location(oldloc.x,oldloc.y-1);
 		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			System.out.println(agName + " Firedist top: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgentPos(agent, newloc);
 				return;
@@ -248,12 +256,11 @@ public class RoomModel extends GridWorldModel {
 		newloc = new Location(oldloc.x,oldloc.y+1);
 		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
 			Location newfire = firedist(newloc);
-			System.out.println(agName + " Firedist bottom: " + newfire);
 			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
 				setAgentPos(agent, newloc);
 				return;
 			}
-		}		
+		}
 	}
 
 	public void agentWait() {
@@ -301,7 +308,6 @@ public class RoomModel extends GridWorldModel {
 			e.printStackTrace();
 		}
 	}
-	
 	
 	/**
 	 * Spreads the fire each cycle with a probability of FIRESPREAD.	
@@ -375,7 +381,6 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
-	
 	/**
 	 * Gets the model agent index given its name.
 	 * @param agName Agent.
@@ -384,7 +389,6 @@ public class RoomModel extends GridWorldModel {
 	public int getAgentByName(String agName) {
 		return Integer.parseInt(agName.substring(3, agName.length()));
 	}
-	
 	
 	public ArrayList<Location> find(int obj){
 		ArrayList<Location> objs = new ArrayList<Location>();
@@ -399,9 +403,50 @@ public class RoomModel extends GridWorldModel {
 		return objs;
 	}
 
-	
-	public Location doesAgSeeIt(int ag, Location p1) {
-	    return doesAgSeeIt(getAgPos(ag), p1);
+	/**
+	 * Gets the next position of the agent towards location p1, if agent can see it.
+	 * It depends on its speed.
+	 * @param ag Agent to move.
+	 * @param p1 Destination
+	 * @return Location of next position.
+	 */
+	private Location doesAgSeeIt(int ag, Location p1) {
+		
+		Location p0 = getAgPos(ag);
+		if(p0.equals(p1))
+			return p0;
+		
+	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
+	    int nx = Math.abs(dx), ny = Math.abs(dy);
+	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
+
+	    Location p = new Location(p0.x, p0.y);
+	    Vector<Location> points = new Vector<Location>();
+	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
+	        if ((0.5+ix) / nx == (0.5+iy) / ny) {
+	            // next step is diagonal
+	            p.x += sign_x;
+	            p.y += sign_y;
+	            ix++;
+	            iy++;
+	        } else if ((0.5+ix) / nx < (0.5+iy) / ny) {
+	            // next step is horizontal
+	            p.x += sign_x;
+	            ix++;
+	        } else {
+	            // next step is vertical
+	            p.y += sign_y;
+	            iy++;
+	        }
+	        if(!model.isFreeOfObstacle(p) || !model.isFree(FIRE, p))
+	        	return null;
+	        points.add(new Location(p.x, p.y));
+	    }
+	    
+	    if(Math.round(agentSpeed(ag)) >= points.size())
+	    	return points.lastElement();
+	    else
+	    	return points.get(Math.toIntExact(Math.round(agentSpeed(ag))));
 	}
 
 	public Location doesAgSeeIt(Location p0, Location p1) {
@@ -438,24 +483,23 @@ public class RoomModel extends GridWorldModel {
 	    return points.get(0);
 	}
 
-	public double agentSpeed(String ag) {
-		int i = getAgentByName(ag), ag2;
+	private double agentSpeed(int ag) {
+		int ag2;
 		double is_aj = 0;
-		if((ag2 = ishelping.get(i)) != -1)
+		if((ag2 = ishelping.get(ag)) != -1)
 			is_aj = injscales.get(ag2);
 
-		return ((1 - injscales.get(i))*panicscales.get(i)*4.0)/(1+is_aj);
-
+		return ((1 - injscales.get(ag))*panicscales.get(ag)*MAXSPEED)/(1+is_aj);
 	}
 
-	public void updateInjuryScale() {
+	public void updateInjuryPanicScale() {
 
-		for(int i = 0; i < getnAgs() ; i++) {
+		for(int i = 0; i < nAgents + nSecurity ; i++) {
 			Location agi = getAgPos(i);
 			double prob = 0;
 
 			//see if another agent is hurting, i.e. see if two are in the same cell
-			for(int j = i + 1; j < getnAgs() ; j++) {
+			for(int j = i + 1; j < nAgents + nSecurity ; j++) {
 				Location agj = getAgPos(i);
 
 				if(agi.equals(agj)) {
@@ -473,17 +517,18 @@ public class RoomModel extends GridWorldModel {
 				}
 			}
 
-			//see if agent near to accident
-			
-			
-			if(firedist(agi) != null) {
-				int dist = agi.distanceManhattan(firedist(agi));
-				if(dist <= 4){
+			//see if agent near to accident or inside the accident
+			for(int j = 0; j < firePositions.size(); j++) {
+				int dist;
+				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
-				if(dist <= 10) {
+				if(doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
 					setAgPanic(i, 1.0);
 				}
+				
+				if(agi == firePositions.get(j))
+					setAgInjScale(i, 1.0);
 			}
 
 
@@ -496,9 +541,7 @@ public class RoomModel extends GridWorldModel {
 					hurts = 1.2;
 				}
 				setAgInjScale(i, Math.min(injscales.get(i)*hurts,1));
-
 			}
-
 		}
 	}
 
@@ -530,7 +573,7 @@ public class RoomModel extends GridWorldModel {
 					Location agj = getAgPos(i);
 
 					prob = random.nextInt(10)/10.0;
-					if(!ishelping.contains(j) && agentSpeed("Bob" + i)>agentSpeed("Bob" + j) && agi.distanceManhattan(agj) <= 5 && helpful(i) > prob) {
+					if(!ishelping.contains(j) && agentSpeed(i)>agentSpeed(j) && agi.distanceManhattan(agj) <= 5 && helpful(i) > prob) {
 						setIsHelping(i, j);
 						return;
 					}
@@ -545,15 +588,21 @@ public class RoomModel extends GridWorldModel {
 	 */
 	public void panicEnv(String agName) {
 		
-		if(random.nextInt(100) + 1 <= 25)
-			panicscales.set(getAgentByName(agName), 1.0);
-		else {
-			if(random.nextInt(100) + 1 <= 45) {
-				double panic = random.nextInt(10)/10.0;
-				
-				if(panicscales.get(getAgentByName(agName)) < panic)
-					panicscales.set(getAgentByName(agName), panic);
+		int agent = getAgentByName(agName);
+		
+		if(agent < nAgents) {
+			if(random.nextInt(100) + 1 <= 25)
+				panicscales.set(agent, 1.0);
+			else {
+				if(random.nextInt(100) + 1 <= 45) {
+					double panic = random.nextInt(10)/10.0;
+					
+					if(panicscales.get(agent) < panic)
+						panicscales.set(agent, panic);
+				}
 			}
+		} else {
+			panicscales.set(agent, 1.0);
 		}
 	}
 
@@ -572,5 +621,9 @@ public class RoomModel extends GridWorldModel {
 					panicscales.set(i, 0.8);
 			}
 		}	
+	}
+
+	public void kill(String agName) {
+		agentDead.set(getAgentByName(agName), true);
 	}
 }

@@ -9,7 +9,6 @@
 /* Plans */
 
 +!start <-
-	.print("started");
 	!move.
 	
 +!run: panicscale(_,P) <-
@@ -19,17 +18,20 @@
 	!run.
 	
 +!run: not panicscale(_,_)  <-
-	.wait("+panicscale(X,Y)", 1000);
+	.wait({+panicscale(X,Y)});
 	!run.
 
-+!move: panicscale(_,P) <- 
++!move: panicscale(_,P) & P <= 0.5 <- 
 	.print(P);
 	.print("randomly moving");
 	move;
 	!move.
+	
++!move: panicscale(_,P) & P > 0.5 <-
+	!nextplan.
 
 +!move: not panicscale(_,_)  <-
-	.wait("+panicscale(X,Y)", 1000);
+	.wait({+panicscale(X,Y)});
 	!move.
 	
 +!nextplan: panicscale(_,P) & P <= 0.5 <-
@@ -39,19 +41,18 @@
 	!run.
 	
 +!nextplan: not panicscale(_,P) <-
-	.wait("+panicscale(X,Y)", 1000);
+	.wait({+panicscale(X,Y)});
 	!nextplan.
-		
-+accident <-
-	.succeed_goal(move);
-	panicscale;
-	!nextplan;
-	.print("panicscale changed").
 	
 +accidentEnv <-
 	.succeed_goal(move);
 	panicscale(environment);
-	!nextplan;
-	.print("panicscale changed").
+	!nextplan.
+	
++injuryscale(X,Y) : Y == 1 <-
+	.my_name(N);
+	killagent;
+	.kill_agent(N).
+	
 	
 	
