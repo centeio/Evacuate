@@ -17,6 +17,7 @@ public class RoomModel extends GridWorldModel {
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
 	public static final int FIRESPREAD = 40;
+	private static final double MAXSPEED = 4.0;
 
 	private static Random random = new Random(System.currentTimeMillis());
 
@@ -119,11 +120,9 @@ public class RoomModel extends GridWorldModel {
 			selflessness("Bob"+i);
 		}
 	}	
-
 	public void setAgPanic(int i, double panic) { panicscales.set(i, panic); }	
 	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
 	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
-
 
 	public void panic(String agent) {
 		double panic = random.nextInt(10)/10.0;
@@ -266,7 +265,6 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 	
-	
 	/**
 	 * Spreads the fire each cycle with a probability of FIRESPREAD.	
 	 */
@@ -339,7 +337,6 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
-	
 	/**
 	 * Gets the model agent index given its name.
 	 * @param agName Agent.
@@ -348,7 +345,6 @@ public class RoomModel extends GridWorldModel {
 	public int getAgentByName(String agName) {
 		return Integer.parseInt(agName.substring(3, agName.length()));
 	}
-	
 	
 	public ArrayList<Location> find(int obj){
 		ArrayList<Location> objs = new ArrayList<Location>();
@@ -363,9 +359,50 @@ public class RoomModel extends GridWorldModel {
 		return objs;
 	}
 
-	
-	public Location doesAgSeeIt(int ag, Location p1) {
-	    return doesAgSeeIt(getAgPos(ag), p1);
+	/**
+	 * Gets the next position of the agent towards location p1, if agent can see it.
+	 * It depends on its speed.
+	 * @param ag Agent to move.
+	 * @param p1 Destination
+	 * @return Location of next position.
+	 */
+	private Location doesAgSeeIt(int ag, Location p1) {
+		
+		Location p0 = getAgPos(ag);
+		if(p0.equals(p1))
+			return p0;
+		
+	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
+	    int nx = Math.abs(dx), ny = Math.abs(dy);
+	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
+
+	    Location p = new Location(p0.x, p0.y);
+	    Vector<Location> points = new Vector<Location>();
+	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
+	        if ((0.5+ix) / nx == (0.5+iy) / ny) {
+	            // next step is diagonal
+	            p.x += sign_x;
+	            p.y += sign_y;
+	            ix++;
+	            iy++;
+	        } else if ((0.5+ix) / nx < (0.5+iy) / ny) {
+	            // next step is horizontal
+	            p.x += sign_x;
+	            ix++;
+	        } else {
+	            // next step is vertical
+	            p.y += sign_y;
+	            iy++;
+	        }
+	        if(!model.isFreeOfObstacle(p) || !model.isFree(FIRE, p))
+	        	return null;
+	        points.add(new Location(p.x, p.y));
+	    }
+	    
+	    if(Math.round(agentSpeed(ag)) >= points.size())
+	    	return points.lastElement();
+	    else
+	    	return points.get(Math.toIntExact(Math.round(agentSpeed(ag))));
 	}
 
 	public Location doesAgSeeIt(Location p0, Location p1) {
@@ -402,14 +439,13 @@ public class RoomModel extends GridWorldModel {
 	    return points.get(0);
 	}
 
-	public double agentSpeed(String ag) {
-		int i = getAgentByName(ag), ag2;
+	private double agentSpeed(int ag) {
+		int ag2;
 		double is_aj = 0;
-		if((ag2 = ishelping.get(i)) != -1)
+		if((ag2 = ishelping.get(ag)) != -1)
 			is_aj = injscales.get(ag2);
 
-		return ((1 - injscales.get(i))*panicscales.get(i)*4.0)/(1+is_aj);
-
+		return ((1 - injscales.get(ag))*panicscales.get(ag)*MAXSPEED)/(1+is_aj);
 	}
 
 	public void updateInjuryPanicScale() {
@@ -440,7 +476,7 @@ public class RoomModel extends GridWorldModel {
 			//see if agent near to accident or inside the accident
 			for(int j = 0; j < firePositions.size(); j++) {
 				int dist;
-				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null){
+				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
 				if(doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
@@ -492,7 +528,7 @@ public class RoomModel extends GridWorldModel {
 					Location agj = getAgPos(i);
 
 					prob = random.nextInt(10)/10.0;
-					if(!ishelping.contains(j) && agentSpeed("Bob" + i)>agentSpeed("Bob" + j) && agi.distanceManhattan(agj) <= 5 && helpful(i) > prob) {
+					if(!ishelping.contains(j) && agentSpeed(i)>agentSpeed(j) && agi.distanceManhattan(agj) <= 5 && helpful(i) > prob) {
 						setIsHelping(i, j);
 						return;
 					}

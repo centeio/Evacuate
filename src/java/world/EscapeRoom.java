@@ -144,7 +144,6 @@ public class EscapeRoom extends Environment {
 	        double injury = model.getAgInjScale(i);
 	        Literal aginjury = Literal.parseLiteral("injuryscale(Seg"+i+","+ injury +")");
 	        addPercept("Seg"+i, aginjury);
-	        System.out.println("Seg" + i + ": " + aginjury);
 	        
 	        //agent's selflessness
 	        double selfln = model.getAgSelflessness(i);

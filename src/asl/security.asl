@@ -18,7 +18,7 @@
 	!run.
 	
 +!run: not panicscale(_,_)  <-
-	.wait("+panicscale(X,Y)", 1000);
+	.wait({+panicscale(X,Y)});
 	!run.
 
 +!move: panicscale(_,P) <- 
@@ -28,7 +28,7 @@
 	!move.
 
 +!move: not panicscale(_,_)  <-
-	.wait("+panicscale(X,Y)", 1000);
+	.wait({+panicscale(X,Y)});
 	!move.
 	
 +!nextplan: panicscale(_,P) & P <= 0.5 <-
@@ -38,7 +38,7 @@
 	!run.
 	
 +!nextplan: not panicscale(_,P) <-
-	.wait("+panicscale(X,Y)", 1000);
+	.wait({+panicscale(X,Y)});
 	!nextplan.
 
 +accidentEnv <-

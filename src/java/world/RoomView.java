@@ -53,8 +53,9 @@ public class RoomView extends GridWorldView {
 	
 	@Override
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
+		RoomModel model = (RoomModel)this.model;
 		
-		if(!((RoomModel)this.model).isDead(id)) {
+		if(!model.isDead(id)) {
 			String label;
 			
 			if(id >= numberAgents) {
@@ -62,7 +63,12 @@ public class RoomView extends GridWorldView {
 				label = "S" + (id+1);
 			}
 			else {
-				c = Color.PINK;
+				if(model.getAgInjScale(id) > 0) {
+					System.out.println("Get injury: " + model.getAgInjScale(id));
+					c = new Color(Math.toIntExact(Math.round(255 * model.getAgInjScale(id))), 0, 0);
+				}
+				else
+					c = Color.PINK;
 				label = "P" + (id+1);
 			}
 			super.drawAgent(g, x, y, c, -1);
