@@ -209,7 +209,7 @@ public class RoomModel extends GridWorldModel {
 		int bestdist = Integer.MAX_VALUE;
 		int i = 0;
 		for(Location door : doorsPositions) {
-			if((newloc = doesAgSeeIt(agent, door)) != null && model.doorsDistance.get(i) < bestdist && model.doorsVisited.get(agent).get(i)) {
+			if(doesAgSeeIt(agent, door) != null && model.doorsDistance.get(i) < bestdist && model.doorsVisited.get(agent).get(i)) {
 				bestdoor = door;
 				bestdist = model.doorsDistance.get(i);
 				i++;
@@ -217,7 +217,7 @@ public class RoomModel extends GridWorldModel {
 		}
 		if(bestdoor != null) {
 			System.out.println(bestdoor + "aqui com best door");
-			setAgentPos(agent,doesAgSeeIt(agent, bestdoor));
+			setAgentPos(agent, doesAgSeeIt(agent, bestdoor));
 			return;
 		}
 		System.out.println("reinei aqui");
@@ -410,55 +410,30 @@ public class RoomModel extends GridWorldModel {
 	 * @param p1 Destination
 	 * @return Location of next position.
 	 */
-	private Location doesAgSeeIt(int ag, Location p1) {
-		
+	private Location doesAgSeeIt(int ag, Location p1) {		
 		Location p0 = getAgPos(ag);
-		if(p0.equals(p1))
-			return p0;
-		
-	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
-	    int nx = Math.abs(dx), ny = Math.abs(dy);
-	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
 
-	    Location p = new Location(p0.x, p0.y);
-	    Vector<Location> points = new Vector<Location>();
-	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
-	        if ((0.5+ix) / nx == (0.5+iy) / ny) {
-	            // next step is diagonal
-	            p.x += sign_x;
-	            p.y += sign_y;
-	            ix++;
-	            iy++;
-	        } else if ((0.5+ix) / nx < (0.5+iy) / ny) {
-	            // next step is horizontal
-	            p.x += sign_x;
-	            ix++;
-	        } else {
-	            // next step is vertical
-	            p.y += sign_y;
-	            iy++;
-	        }
-	        if(!model.isFreeOfObstacle(p) || !model.isFree(FIRE, p))
-	        	return null;
-	        points.add(new Location(p.x, p.y));
-	    }
-	    
+	    Vector<Location> points = linepp(p0,p1);
+	    if(points == null)
+	    	return null;
 	    if(Math.round(agentSpeed(ag)) >= points.size())
 	    	return points.lastElement();
 	    else
 	    	return points.get(Math.toIntExact(Math.round(agentSpeed(ag))));
 	}
 
-	public Location doesAgSeeIt(Location p0, Location p1) {
-		if(p0.equals(p1))
-			return p0;
+	public Vector<Location> linepp(Location p0, Location p1) {
+		Vector<Location> points = new Vector<Location>();
+		if(p0.equals(p1)) {
+			points.add(p0);
+			return points;
+		}
 		
 	    int dx = p1.x-p0.x, dy = p1.y-p0.y;
 	    int nx = Math.abs(dx), ny = Math.abs(dy);
 	    int sign_x = dx > 0? 1 : -1, sign_y = dy > 0? 1 : -1;
 
 	    Location p = new Location(p0.x, p0.y);
-	    ArrayList<Location> points = new ArrayList<Location>();
 	    for (int ix = 0, iy = 0; ix < nx || iy < ny;) {
 	        if ((0.5+ix) / nx == (0.5+iy) / ny) {
 	            // next step is diagonal
@@ -480,7 +455,7 @@ public class RoomModel extends GridWorldModel {
 	        }
 	        points.add(new Location(p.x, p.y));
 	    }
-	    return points.get(0);
+	    return points;
 	}
 
 	private double agentSpeed(int ag) {
@@ -520,10 +495,10 @@ public class RoomModel extends GridWorldModel {
 			//see if agent near to accident or inside the accident
 			for(int j = 0; j < firePositions.size(); j++) {
 				int dist;
-				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
+				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && linepp(agi, firePositions.elementAt(j)) != null) {
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
-				if(doesAgSeeIt(agi, firePositions.elementAt(j)) != null) {
+				if(linepp(agi, firePositions.elementAt(j)) != null) {
 					setAgPanic(i, 1.0);
 				}
 				
@@ -550,7 +525,7 @@ public class RoomModel extends GridWorldModel {
 		Location fire = null;
 
 		for(int i = 0; i < firePositions.size(); i++) {
-			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && (doesAgSeeIt(l, firePositions.elementAt(i)) != null)) {
+			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && (linepp(l, firePositions.elementAt(i)) != null)) {
 				dist = l.distanceManhattan(firePositions.elementAt(i));
 				fire = firePositions.elementAt(i);
 			}
