@@ -261,6 +261,8 @@ public class RoomModel extends GridWorldModel {
 				return;
 			}
 		}
+		
+		move_randomly(agName);
 	}
 
 	public void agentWait() {
@@ -493,19 +495,16 @@ public class RoomModel extends GridWorldModel {
 			}
 
 			//see if agent near to accident or inside the accident
-			for(int j = 0; j < firePositions.size(); j++) {
-				int dist;
-				if((dist = agi.distanceManhattan(firePositions.elementAt(j))) <= 4 && linepp(agi, firePositions.elementAt(j)) != null) {
+			Location fire;
+			if((fire = firedist(agi)) != null) {
+				setAgPanic(i, 1.0);
+				
+				int dist = agi.distanceManhattan(fire);
+				if(dist <= 4) {
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
-				if(linepp(agi, firePositions.elementAt(j)) != null) {
-					setAgPanic(i, 1.0);
-				}
-				
-				if(agi == firePositions.get(j))
-					setAgInjScale(i, 1.0);
 			}
-
+			
 
 			//see if agent fell
 			prob = random.nextInt(100);
