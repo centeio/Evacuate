@@ -118,6 +118,17 @@ public class EscapeRoom extends Environment {
 	        double selfln = model.getAgSelflessness(i);
 	        Literal agselfln = Literal.parseLiteral("selflessness(Bob"+i+","+ selfln +")");
 	        addPercept("Bob"+i,agselfln);
+	        
+	        //agent's safety
+	        if(model.isAgSafe(i)) {
+		        Literal agsafe = Literal.parseLiteral("safe(Bob"+i+")");
+		        addPercept("Bob"+i,agsafe);
+	        }
+		    //agent's safety
+	        if(model.getkArea(i)) {
+		        Literal karea = Literal.parseLiteral("kowledgeofArea(Bob"+i+")");
+		        addPercept("Bob"+i,karea);
+	        }
         }
         
         for(int i = numberAgents; i < numberAgents + numberSecurity; i++) {

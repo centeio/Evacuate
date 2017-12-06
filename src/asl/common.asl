@@ -54,5 +54,9 @@
 	killagent;
 	.kill_agent(N).
 	
-	
++safe(X) <-
+	.print("SAFE");
+	.my_name(N);
+	killagent;
+	.kill_agent(N).
 	
