@@ -197,14 +197,7 @@ public class RoomModel extends GridWorldModel {
 				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
 					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
 			}
-		}
-		
-		for(Edge edge : model.graph.getEdges()) {
-			Location p = new Location(1,1);
-			if(edge.getOne().getLocation().equals(p))
-				System.out.println(edge.getOne() + " -> " + edge.getTwo());
-		}
-			
+		}			
 	}
 
 	private RoomModel(int w, int h, int nAgs) {
