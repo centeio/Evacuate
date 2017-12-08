@@ -141,7 +141,7 @@ public class RoomModel extends GridWorldModel {
 			for(int j = 0; j <  model.data[0].length; j++)
 				model.graph.addVertex(new Vertex(new Location(i,j)), true);
 		
-		for(Location p0 : model.graph.vertexKeys()){
+		for(Location p0 : model.graph.vertexKeys()) {
 			if(p0.x > 0) {
 				//LEFT
 				Location left = new Location(p0.x-1, p0.y);
@@ -168,8 +168,43 @@ public class RoomModel extends GridWorldModel {
 				Location bottom = new Location(p0.x, p0.y+1);
 				if(model.data[bottom.x][bottom.y] != GridWorldModel.OBSTACLE)
 					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(bottom));
-			}	
+			}
+			
+			if(p0.x > 0 && p0.y > 0) {
+				//LEFT - TOP
+				Location dg = new Location(p0.x-1, p0.y-1);
+				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+			}
+			
+			if(p0.x > 0 && p0.y < model.data[0].length - 1) {
+				//LEFT - BOTTOM
+				Location dg = new Location(p0.x-1, p0.y+1);
+				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+			}
+			
+			if(p0.x < model.data.length - 1 && p0.y > 0) {
+				//RIGHT - TOP
+				Location dg = new Location(p0.x+1, p0.y-1);
+				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+			}
+			
+			if(p0.x < model.data.length - 1 && p0.y < model.data[0].length - 1) {
+				//RIGHT - BOTTOM
+				Location dg = new Location(p0.x+1, p0.y+1);
+				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+			}
 		}
+		
+		for(Edge edge : model.graph.getEdges()) {
+			Location p = new Location(1,1);
+			if(edge.getOne().getLocation().equals(p))
+				System.out.println(edge.getOne() + " -> " + edge.getTwo());
+		}
+			
 	}
 
 	private RoomModel(int w, int h, int nAgs) {
