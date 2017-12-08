@@ -64,8 +64,7 @@ public class RoomView extends GridWorldView {
 			}
 			else {
 				if(model.getAgInjScale(id) > 0) {
-					System.out.println("Get injury: " + model.getAgInjScale(id));
-					c = new Color(Math.toIntExact(Math.round(255 * model.getAgInjScale(id))), 0, 0);
+					c = new Color(255 - Math.toIntExact(Math.round(255 * model.getAgInjScale(id))), 0, 0);
 				}
 				else
 					c = Color.PINK;

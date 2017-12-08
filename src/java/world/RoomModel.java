@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
 
+import graph.*;
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
 
@@ -16,11 +17,12 @@ public class RoomModel extends GridWorldModel {
 	public static final int DOOR  = 8;
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
-	public static final int FIRESPREAD = 40;
+	public static final int FIRESPREAD = 30;
 	private static final double MAXSPEED = 4.0;
 
 	private static Random random = new Random(System.currentTimeMillis());
 
+	private Graph graph = new Graph();
 	private Vector<Location> firePositions = new Vector<Location>();
 	private Vector<Location> doorsPositions = new Vector<Location>();
 	private ArrayList<Integer> doorsDistance = new ArrayList<Integer>();
@@ -128,7 +130,22 @@ public class RoomModel extends GridWorldModel {
 			e.printStackTrace();
 		}
 		
+		createGraph();
+		
 		return model;
+	}
+
+	private static void createGraph() {
+		
+		for(int i = 0; i < model.data.length; i++)
+			for(int j = 0; j <  model.data[0].length; j++)
+				model.graph.addVertex(new Vertex(new Location(i,j)), true);
+		
+		for(Location p0 : model.graph.vertexKeys())
+			for(Location p1 : model.graph.vertexKeys())
+				if(model.data[p1.x][p1.y] != GridWorldModel.OBSTACLE)
+					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(p1));
+		
 	}
 
 	private RoomModel(int w, int h, int nAgs) {
@@ -197,7 +214,6 @@ public class RoomModel extends GridWorldModel {
 		}
 	}
 
-
 	public void setAgentPos(int i, Location l) {
 		int d = 0;
 		setAgPos(i,l);
@@ -208,6 +224,7 @@ public class RoomModel extends GridWorldModel {
 		}
 
 	}
+	
 	public void move_alert(String agName) {
 		int agent = getAgentByName(agName);
 		kArea.set(agent, false);
@@ -303,16 +320,16 @@ public class RoomModel extends GridWorldModel {
 		for(int i = 0; i < nAgents ; i++) {
 			Location pos;
 			if((pos = doesAgSeeIt(agent, getAgPos(i))) != null && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
-				//propagar pânico
+				//propagar panico
 				if(panicscales.get(i) > panicscales.get(agent)) {
 					panicscales.set(agent, panicscales.get(i));
 				}
-				//ver se alguém sabe onde é a saída
+				//ver se alguem sabe onde e a saida
 				if(kArea.get(i) == true) {
 					kArea.set(agent, true);
 					return pos;
 				}
-				//ver se alguém precisa de ajuda
+				//ver se alguem precisa de ajuda
 				if(ishelping.get(agent) != -1) {
 					double prob = 0;
 
@@ -561,7 +578,9 @@ public class RoomModel extends GridWorldModel {
 				
 				int dist = agi.distanceManhattan(fire);
 				if(dist <= 4) {
+					System.out.println("Agent " + getAgAtPos(agi) + " injury: " + injscales.get(getAgAtPos(agi)));
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
+					System.out.println("Agent " + getAgAtPos(agi) + " injury: " + injscales.get(getAgAtPos(agi)));
 				}
 			}
 			
@@ -584,7 +603,7 @@ public class RoomModel extends GridWorldModel {
 		Location fire = null;
 
 		for(int i = 0; i < firePositions.size(); i++) {
-			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && (linepp(l, firePositions.elementAt(i)) != null)) {
+			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && linepp(l, firePositions.elementAt(i)) != null) {
 				dist = l.distanceManhattan(firePositions.elementAt(i));
 				fire = firePositions.elementAt(i);
 			}
@@ -595,7 +614,6 @@ public class RoomModel extends GridWorldModel {
 	private double helpful(int i) {
 		return (1 - panicscales.get(i))*selflessness.get(i);
 	}
-
 
 	/**
 	 * Changes the panic scale of every agent after hearing the alarm ring.
@@ -639,6 +657,7 @@ public class RoomModel extends GridWorldModel {
 
 	public void kill(String agName) {
 		agentDead.set(getAgentByName(agName), true);
+		setAgPos(getAgentByName(agName), getAgPos(getAgentByName(agName)));
 	}
 
 

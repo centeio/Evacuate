@@ -11,8 +11,6 @@
 +!start : true <- !move.
 
 +!run: panicscale(_,P) <-
-	.print(P);
-	.print("moving!!!");
 	segtellFire;
 	alert;
 	!run.
@@ -21,9 +19,7 @@
 	.wait({+panicscale(X,Y)});
 	!run.
 
-+!move: panicscale(_,P) <- 
-	.print(P);
-	.print("randomly moving");
++!move: panicscale(_,P) <-
 	move;
 	!move.
 
@@ -47,12 +43,12 @@
 	!nextplan.
 	
 +injuryscale(X,Y) : Y == 1 <-
+	.print("Killing security");
 	.my_name(N);
 	killagent;
 	.kill_agent(N).
 
 +safe(X) <-
-	.print("SAFE");
 	.my_name(N);
 	killagent;
 	.kill_agent(N).

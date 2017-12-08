@@ -12,8 +12,6 @@
 	!move.
 	
 +!run: panicscale(_,P) <-
-	.print(P);
-	.print("moving!!!");
 	alert;
 	!run.
 	
@@ -22,8 +20,6 @@
 	!run.
 
 +!move: panicscale(_,P) & P <= 0.5 <- 
-	.print(P);
-	.print("randomly moving");
 	move;
 	!move.
 	
@@ -55,7 +51,6 @@
 	.kill_agent(N).
 	
 +safe(X) <-
-	.print("SAFE");
 	.my_name(N);
 	killagent;
 	.kill_agent(N).
