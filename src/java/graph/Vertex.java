@@ -129,5 +129,5 @@ public class Vertex {
     public ArrayList<Edge> getNeighbors(){
         return new ArrayList<Edge>(this.neighborhood);
     }
-    
+
 }

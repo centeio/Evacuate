@@ -17,9 +17,8 @@ import jason.environment.grid.Location;
  * @date June 09, 2015
  */
 public class Graph {
-    
     private HashMap<Location, Vertex> vertices;
-    private HashMap<Integer, Edge> edges;
+	private HashMap<Integer, Edge> edges;
     
     public Graph(){
         this.vertices = new HashMap<Location, Vertex>();
@@ -192,5 +191,12 @@ public class Graph {
         return new HashSet<Edge>(this.edges.values());
     }
     
+    /**
+     * 
+     * @return Set<Vertex> The vertices of this graph
+     */
+    public Set<Vertex> getVertices(){
+        return new HashSet<Vertex>(this.vertices.values());
+    }
 }
 

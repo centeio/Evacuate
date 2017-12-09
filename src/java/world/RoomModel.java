@@ -229,7 +229,7 @@ public class RoomModel extends GridWorldModel {
 	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
 	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
 
-	public void panic(String agent) {
+	public void panic(String agent) { 
 		double panic = random.nextInt(10)/10.0;
 		model.setAgPanic(model.getAgentByName(agent), panic);
 	}
@@ -713,4 +713,5 @@ public class RoomModel extends GridWorldModel {
 	}
 
 
+	
 }
