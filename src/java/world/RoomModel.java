@@ -36,14 +36,6 @@ public class RoomModel extends GridWorldModel {
 	public ArrayList<Boolean> safe = new ArrayList<Boolean>();
 	public ArrayList<Boolean> kArea = new ArrayList<Boolean>();
 
-	public boolean isAgSafe(int i) {
-		return safe.get(i);
-	}
-
-	public void setSafe(int i, boolean s) {
-		safe.set(i, s);
-	}
-
 	// singleton pattern
 	protected static RoomModel model = null;
 
@@ -118,7 +110,13 @@ public class RoomModel extends GridWorldModel {
 				model.injscales.add(i, 0.0);
 				model.safe.add(i, false);
 				model.kArea.add(i, false);
-				model.setAgSelflessness(i, -1);
+				if(i < nbAgs) {
+					double selflessness = random.nextInt(10)/10.0;
+					model.selflessness.add(i, selflessness);
+				}
+				else {
+					model.selflessness.add(i, 1.0);
+				}
 				model.doorsVisited.add(i, new ArrayList<Boolean>());
 				for(int j=0; j<model.doorsPositions.size();j++) {
 					model.doorsVisited.get(i).add(j,false);
@@ -197,7 +195,7 @@ public class RoomModel extends GridWorldModel {
 				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
 					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
 			}
-		}
+		}	
 	}
 
 	private RoomModel(int w, int h, int nAgs) {
@@ -216,29 +214,19 @@ public class RoomModel extends GridWorldModel {
 	public int[][] getMap() { return model.data; }
 	public Boolean isDead(String agName) { return agentDead.get(getAgentByName(agName)); }
 	public boolean isDead(int id) { return agentDead.get(id); }
+	public boolean isAgSafe(int i) { return safe.get(i); }
 
-	public void setAgSelflessness(int i, double j) {
-		try {
-			selflessness.set(i, j);		
-		}catch (IndexOutOfBoundsException e) {
-			selflessness.add(i,0.0);
-			selflessness("Bob"+i);
-		}
-	}	
+	public void setAgSelflessness(int i, double j) { selflessness.set(i, j); }	
 	public void setAgPanic(int i, double panic) { panicscales.set(i, panic); }	
 	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
 	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
+	public void setSafe(int i, boolean s) { safe.set(i, s); }
 
 	public void panic(String agent) {
 		double panic = random.nextInt(10)/10.0;
 		model.setAgPanic(model.getAgentByName(agent), panic);
 	}
-
-	private void selflessness(String agent) {
-		double selflessness = random.nextInt(10)/10.0;
-		model.setAgSelflessness(model.getAgentByName(agent), selflessness);	
-	} 
-
+	
 	public boolean getkArea(int i) {
 		return model.kArea.get(i);
 	}
