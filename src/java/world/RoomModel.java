@@ -28,16 +28,18 @@ public class RoomModel extends GridWorldModel {
 	private Vector<Location> firePositions = new Vector<Location>();
 	private Vector<Location> doorsPositions = new Vector<Location>();
 	private ArrayList<Integer> doorsDistance = new ArrayList<Integer>();
+	private ArrayList<Integer> following = new ArrayList<Integer>();
 	private Vector<Location> mainDoorsPositions = new Vector<Location>();
+	private Vector<Location> doorSelected = new Vector<Location>();
 	private ArrayList<ArrayList<Boolean>> doorsVisited = new ArrayList<ArrayList<Boolean>>();
 	private Vector<Boolean> agentDead = new Vector<Boolean>();
-	private ArrayList<Double> panicscales;
-	private ArrayList<Double> selflessness;
-	private ArrayList<Double> injscales;
-	public ArrayList<Integer> ishelping;
-	public ArrayList<Boolean> safe = new ArrayList<Boolean>();
-	public ArrayList<Boolean> kArea = new ArrayList<Boolean>();
-	public ArrayList<Boolean> herding = new ArrayList<Boolean>();
+	private ArrayList<Double> panicscales = new ArrayList<Double>();
+	private ArrayList<Double> selflessness= new ArrayList<Double>();
+	private ArrayList<Double> injscales = new ArrayList<Double>();
+	private ArrayList<Integer> ishelping = new ArrayList<Integer>();
+	private ArrayList<Boolean> safe = new ArrayList<Boolean>();
+	private ArrayList<Boolean> kArea = new ArrayList<Boolean>();
+	private ArrayList<Boolean> herding = new ArrayList<Boolean>();
 
 	// singleton pattern
 	protected static RoomModel model = null;
@@ -114,6 +116,9 @@ public class RoomModel extends GridWorldModel {
 				model.safe.add(i, false);
 				model.kArea.add(i, false);
 				model.herding.add(i, false);
+				model.following.add(i, -1);
+				model.doorSelected.add(i, null);
+				
 				if(i < nbAgs) {
 					double selflessness = random.nextInt(10)/10.0;
 					model.selflessness.add(i, selflessness);
@@ -204,10 +209,6 @@ public class RoomModel extends GridWorldModel {
 
 	private RoomModel(int w, int h, int nAgs) {
 		super(w, h, nAgs);
-		panicscales = new ArrayList<Double>();
-		selflessness = new ArrayList<Double>();
-		injscales = new ArrayList<Double>();
-		ishelping = new ArrayList<Integer>();
 	}
 
 	public double getAgSelflessness(int i) { return selflessness.get(i); }
@@ -271,10 +272,65 @@ public class RoomModel extends GridWorldModel {
 	
 	public void move_alert(String agName) {
 		int agent = getAgentByName(agName);
-		Location oldloc = getAgPos(agent);
-		Location newloc = null;
 		
-		int agHelping;
+		if(!safe.get(agent)) {
+			Location currentPosition = getAgPos(agent);
+			Vertex current = graph.getVertex(currentPosition);
+			Vertex goal = graph.getVertex(currentPosition);
+			
+			lookAround(agent);
+			
+			int agHelping;
+			//agent being helped
+			if((agHelping = ishelping.indexOf(agent)) != -1) {
+				setAgentPos(agent, getAgPos(agHelping));
+				return;
+			}
+			
+			//Se agent sabe a area, vai em direcao a saida
+			if(kArea.get(agent)) {
+				Location closestDoor = null;
+				int distanceExit = Integer.MAX_VALUE;
+				
+				//Encontra main door mais proxima
+				for(Location location : mainDoorsPositions)
+					if(currentPosition.distanceManhattan(location) < distanceExit)
+						closestDoor = location;
+				
+				if(closestDoor != null)
+					goal = graph.getVertex(closestDoor);
+			}
+			
+			//Se eu estou a seguir um caminho
+			else if(herding.get(agent)) {
+				
+				//Se nao estou a seguir ninguem, sou o lider (fui eu que ativei o A*), vou ate a saida, 
+				//mas nao a melhor saida, para simular que o agente nao sabe a area
+				if(following.get(agent) == -1)
+					goal = graph.getVertex(doorSelected.get(agent));
+				//Se estou a seguir alguem, calculo o melhor caminho ate a esse agente
+				else
+					goal = graph.getVertex(getAgPos(following.get(agent)));
+			}
+			
+			else {
+				herding.set(agent, true);
+				
+				Location mainDoor = mainDoorsPositions.get(random.nextInt(mainDoorsPositions.size()));
+				doorSelected.set(agent, mainDoor);
+				goal = graph.getVertex(mainDoor);
+			}
+			
+			List<Edge> path = AStar.aStar(graph, current, goal);
+			if(path != null && path.size() > 0)
+				setAgentPos(agent, path.get(0).getNeighbor(current).getLocation());
+			
+			if(mainDoorsPositions.contains(getAgPos(agent)))
+				safe.set(agent, true);
+			return;
+		}
+		
+		/*int agHelping;
 		//agent being helped
 		if((agHelping = ishelping.indexOf(agent)) != -1) {
 			setAgentPos(agent, getAgPos(agHelping));
@@ -322,12 +378,51 @@ public class RoomModel extends GridWorldModel {
 		else {
 			setAgentPos(agent, newloc);
 			return;
-		}
+		}*/
+	}
+	
+	private void lookAround(int agent) {
 		
-
+		for(int i = 0; i < nAgents + nSecurity ; i++) {
+			
+			if(doesAgSeeIt(agent, getAgPos(i)) != null && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
+				
+				//Propaga panico
+				if(panicscales.get(agent) > panicscales.get(i))
+					panicscales.set(i, panicscales.get(agent));
+				else
+					panicscales.set(agent, panicscales.get(i));
+				
+				//ver se alguem sabe onde e a saida
+				if(kArea.get(i) == true)
+					kArea.set(agent, true);
+				
+				//Se agent ve outro que esta a andar em direcao a algo, segue quem ele esta√° a seguir ou ele se nao esta a seguir ninguem (lider)
+				if(herding.get(i) && !herding.get(agent)) {
+					herding.set(agent, true);
+					if(following.get(i) != -1)
+						following.set(agent, following.get(i));
+					else
+						following.set(agent, i);
+				}
+				
+				//ver se alguem precisa de ajuda e ajuda se puder
+				if(ishelping.get(agent) == -1 && injscales.get(agent) < 0.5 && injscales.get(i) >= 0.5 && !ishelping.contains(i) && !isDead(i)) {
+					
+					if(agent >= nAgents)
+						ishelping.set(agent, i);
+					else {
+						double prob = random.nextInt(10)/10.0;
+						if(helpful(i) > prob) {
+							ishelping.set(agent, i);
+						}
+					}
+				}
+			}
+		}
 	}
 
-	private Location lookaround(int agent) {
+	/*private Location lookaround(int agent) {
 		for(int i = 0; i < nAgents ; i++) {
 			Location pos;
 			if((pos = doesAgSeeIt(agent, getAgPos(i))) != null && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
@@ -341,7 +436,7 @@ public class RoomModel extends GridWorldModel {
 					return pos;
 				}
 				
-				//ver se alguem est· a ir para algum lado
+				//ver se alguem esta a ir para algum lado
 				if(herding.get(i) == true) {
 					herding.set(agent, true);
 					return pos;
@@ -352,14 +447,14 @@ public class RoomModel extends GridWorldModel {
 					double prob = 0;
 
 					prob = random.nextInt(10)/10.0;
-					if(!ishelping.contains(i) && agentSpeed(agent)>agentSpeed(i) && helpful(i) > prob) {
+					if(!ishelping.contains(i) && agentSpeed(agent) > agentSpeed(i) && helpful(i) > prob) {
 						setIsHelping(agent, i);
 					}
 				}
-			}			
+			}		
 		}
 		return null;
-	}
+	}*/
 
 	public void agentWait() {
 
@@ -596,9 +691,7 @@ public class RoomModel extends GridWorldModel {
 				
 				int dist = agi.distanceManhattan(fire);
 				if(dist <= 4) {
-					System.out.println("Agent " + getAgAtPos(agi) + " injury: " + injscales.get(getAgAtPos(agi)));
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
-					System.out.println("Agent " + getAgAtPos(agi) + " injury: " + injscales.get(getAgAtPos(agi)));
 				}
 			}
 			

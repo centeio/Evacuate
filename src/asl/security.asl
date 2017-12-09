@@ -43,7 +43,6 @@
 	!nextplan.
 	
 +injuryscale(X,Y) : Y == 1 <-
-	.print("Killing security");
 	.my_name(N);
 	killagent;
 	.kill_agent(N).

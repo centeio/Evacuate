@@ -93,14 +93,7 @@ public class EscapeRoom extends Environment {
         	clearPercepts("Bob"+i);
         	
         	//agent's location
-        	Location agloc;
-        	if(model.ishelping.contains(i)) {
-        		//agent is being helped
-        		agloc = model.getAgPos(model.ishelping.indexOf(i));
-        	}
-        	else {
-    	        agloc = model.getAgPos(i);
-        	}
+        	Location agloc = model.getAgPos(i);
 	        Literal pos = Literal.parseLiteral("pos(Bob" + i + "," + agloc.x + "," + agloc.y + ")");
 	        addPercept("Bob"+i, pos);
 	        
@@ -135,14 +128,7 @@ public class EscapeRoom extends Environment {
         	clearPercepts("Seg"+i);
         	
         	//agent's location
-        	Location agloc;
-        	if(model.ishelping.contains(i)) {
-        		//agent is being helped
-        		agloc = model.getAgPos(model.ishelping.indexOf(i));
-        	}
-        	else {
-    	        agloc = model.getAgPos(i);
-        	}
+        	Location agloc = model.getAgPos(i);
 	        Literal pos = Literal.parseLiteral("pos(Seg" + i + "," + agloc.x + "," + agloc.y + ")");
 	        addPercept("Seg"+i, pos);
 	        
@@ -154,7 +140,6 @@ public class EscapeRoom extends Environment {
 	        //agent's injury scale
 	        double injury = model.getAgInjScale(i);
 	        Literal aginjury = Literal.parseLiteral("injuryscale(Seg"+i+","+ injury +")");
-	        System.out.println("Added " + aginjury + " to Seg" + i);
 	        addPercept("Seg"+i, aginjury);
 	        
 	        //agent's selflessness
