@@ -128,5 +128,9 @@ public class Edge implements Comparable<Edge> {
         Edge e = (Edge)other;
         
         return e.one.equals(this.one) && e.two.equals(this.two);
-    }   
+    }
+
+	public int getCost() {
+		return 1;
+	}   
 }
