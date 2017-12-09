@@ -79,13 +79,12 @@ public class Graph {
         }
        
         //and that the Edge isn't already incident to one of the vertices
-        else if(one.containsNeighbor(e) || two.containsNeighbor(e)){
+        else if(one.containsNeighbor(e)){
             return false;
         }
             
         edges.put(e.hashCode(), e);
         one.addNeighbor(e);
-        two.addNeighbor(e);
         return true;
     }
     
