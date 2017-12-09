@@ -41,16 +41,16 @@ public class EscapeRoom extends Environment {
         
         try {
             if (action.equals(move)) {
-                model.move_randomly(agName);
+                model.moveRandomly(agName);
             }
             else if (action.equals(wait)) {
                 model.agentWait();
             }           
             else if (action.equals(alert)) {
-                model.move_alert(agName);
+                model.moveAlert(agName);
             }
             else if(action.equals(createFire)) {            	
-            	model.create_fire();
+            	model.createFire();
             }
             else if(action.equals(environment)) {
             	model.environment();
@@ -84,7 +84,6 @@ public class EscapeRoom extends Environment {
         return true;
     }
       
-	
     void updatePercepts() {
         
         model.updateInjuryPanicScale();

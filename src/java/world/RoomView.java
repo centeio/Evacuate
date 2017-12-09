@@ -60,7 +60,7 @@ public class RoomView extends GridWorldView {
 			
 			if(id >= numberAgents) {
 				c = Color.BLUE;
-				label = "S" + (id+1);
+				label = "S" + id;
 			}
 			else {
 				if(model.getAgInjScale(id) > 0) {
@@ -68,7 +68,7 @@ public class RoomView extends GridWorldView {
 				}
 				else
 					c = Color.PINK;
-				label = "P" + (id+1);
+				label = "P" + id;
 			}
 			super.drawAgent(g, x, y, c, -1);
 			

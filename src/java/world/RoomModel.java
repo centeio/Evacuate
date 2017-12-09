@@ -31,7 +31,6 @@ public class RoomModel extends GridWorldModel {
 	private ArrayList<Integer> following = new ArrayList<Integer>();
 	private Vector<Location> mainDoorsPositions = new Vector<Location>();
 	private Vector<Location> doorSelected = new Vector<Location>();
-	private ArrayList<ArrayList<Boolean>> doorsVisited = new ArrayList<ArrayList<Boolean>>();
 	private Vector<Boolean> agentDead = new Vector<Boolean>();
 	private ArrayList<Double> panicscales = new ArrayList<Double>();
 	private ArrayList<Double> selflessness= new ArrayList<Double>();
@@ -126,10 +125,6 @@ public class RoomModel extends GridWorldModel {
 				else {
 					model.selflessness.add(i, 1.0);
 				}
-				model.doorsVisited.add(i, new ArrayList<Boolean>());
-				for(int j=0; j<model.doorsPositions.size();j++) {
-					model.doorsVisited.get(i).add(j,false);
-				}
 				model.agentDead.add(i, false);
 			}
 
@@ -137,12 +132,12 @@ public class RoomModel extends GridWorldModel {
 			e.printStackTrace();
 		}
 		
-		createGraph();
+		model.createGraph();
 		
 		return model;
 	}
 
-	private static void createGraph() {
+	private void createGraph() {
 		
 		for(int i = 0; i < model.data.length; i++)
 			for(int j = 0; j <  model.data[0].length; j++)
@@ -212,6 +207,7 @@ public class RoomModel extends GridWorldModel {
 	}
 
 	public double getAgSelflessness(int i) { return selflessness.get(i); }
+	public boolean getkArea(int i) { return model.kArea.get(i); }
 	public double getAgPanic(int i) { return panicscales.get(i); }
 	public double getAgInjScale(int i) { return injscales.get(i); }
 	public int getIsHelping(int i) { return ishelping.get(i); }
@@ -226,280 +222,6 @@ public class RoomModel extends GridWorldModel {
 	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
 	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
 	public void setSafe(int i, boolean s) { safe.set(i, s); }
-
-	public void panic(String agent) { 
-		double panic = random.nextInt(10)/10.0;
-		model.setAgPanic(model.getAgentByName(agent), panic);
-	}
-	
-	public boolean getkArea(int i) {
-		return model.kArea.get(i);
-	}
-	
-	public void move_randomly(String agName) {
-
-		int agent = getAgentByName(agName);
-		
-		if(agent < nAgents) {
-			
-			Location r1 = getAgPos(agent);
-			int randomX, randomY;
-	
-			do {
-				randomX = random.nextInt(3) - 1;
-				randomY = random.nextInt(3) - 1;
-			}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY) || !model.isFree(FIRE,new Location(r1.x + randomX,  r1.y + randomY)));
-	
-			r1.x += randomX;
-			r1.y += randomY;
-	
-			setAgentPos(agent, r1);
-		} else {
-			setAgentPos(agent, getAgPos(agent));
-		}
-	}
-
-	public void setAgentPos(int i, Location l) {
-		int d = 0;
-		setAgPos(i,l);
-		for(Location door: model.doorsPositions) {
-			if(door == l) {
-				model.doorsVisited.get(i).set(d, true);
-			}
-		}
-
-	}
-	
-	public void move_alert(String agName) {
-		int agent = getAgentByName(agName);
-		
-		if(!safe.get(agent)) {
-			Location currentPosition = getAgPos(agent);
-			Vertex current = graph.getVertex(currentPosition);
-			Vertex goal = graph.getVertex(currentPosition);
-			
-			lookAround(agent);
-			
-			int agHelping;
-			//agent being helped
-			if((agHelping = ishelping.indexOf(agent)) != -1) {
-				setAgentPos(agent, getAgPos(agHelping));
-				return;
-			}
-			
-			//Se agent sabe a area, vai em direcao a saida
-			if(kArea.get(agent)) {
-				Location closestDoor = null;
-				int distanceExit = Integer.MAX_VALUE;
-				
-				//Encontra main door mais proxima
-				for(Location location : mainDoorsPositions)
-					if(currentPosition.distanceManhattan(location) < distanceExit)
-						closestDoor = location;
-				
-				if(closestDoor != null)
-					goal = graph.getVertex(closestDoor);
-			}
-			
-			//Se eu estou a seguir um caminho
-			else if(herding.get(agent)) {
-				
-				//Se nao estou a seguir ninguem, sou o lider (fui eu que ativei o A*), vou ate a saida, 
-				//mas nao a melhor saida, para simular que o agente nao sabe a area
-				if(following.get(agent) == -1)
-					goal = graph.getVertex(doorSelected.get(agent));
-				//Se estou a seguir alguem, calculo o melhor caminho ate a esse agente
-				else
-					goal = graph.getVertex(getAgPos(following.get(agent)));
-			}
-			
-			else {
-				herding.set(agent, true);
-				
-				Location mainDoor = mainDoorsPositions.get(random.nextInt(mainDoorsPositions.size()));
-				doorSelected.set(agent, mainDoor);
-				goal = graph.getVertex(mainDoor);
-			}
-			
-			List<Edge> path = AStar.aStar(graph, current, goal);
-			if(path != null && path.size() > 0)
-				setAgentPos(agent, path.get(0).getNeighbor(current).getLocation());
-			
-			if(mainDoorsPositions.contains(getAgPos(agent)))
-				safe.set(agent, true);
-			return;
-		}
-		
-		/*int agHelping;
-		//agent being helped
-		if((agHelping = ishelping.indexOf(agent)) != -1) {
-			setAgentPos(agent, getAgPos(agHelping));
-			return;
-		}
-				
-		//looks for exits
-		Location bestexit = null;
-		int distexit = Integer.MAX_VALUE;
-		for(Location door : mainDoorsPositions) {
-			if(oldloc == door) {
-				model.safe.set(agent, true);
-				model.kArea.set(agent, true);
-				return;
-			}
-			//nearest exit door
-			if(oldloc.distanceManhattan(door) < distexit) {
-				distexit = oldloc.distanceManhattan(door);
-				bestexit = door;
-			}
-			
-			if((newloc = doesAgSeeIt(agent, door)) != null) {
-				model.kArea.set(agent, true);
-				setAgentPos(agent,newloc);
-				return;
-			}
-		}
-		//if agent knows the way out OR nobody around them can tell
-		if(model.getkArea(agent) || (newloc = lookaround(agent)) == null){
-			//finds best path
-			Vertex current = graph.getVertex(oldloc);
-			Vertex goal;
-			if(bestexit != null)
-				goal = graph.getVertex(bestexit);
-			else
-				goal = graph.getVertex(mainDoorsPositions.get(0));
-			
-			List<Edge> path = AStar.aStar(graph,current,goal);
-			if(path != null) {
-				herding.set(agent, true);
-				setAgentPos(agent, path.get(0).getNeighbor(current).getLocation());
-				return;
-			}
-		}
-		else {
-			setAgentPos(agent, newloc);
-			return;
-		}*/
-	}
-	
-	private void lookAround(int agent) {
-		
-		for(int i = 0; i < nAgents + nSecurity ; i++) {
-			
-			if(doesAgSeeIt(agent, getAgPos(i)) != null && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
-				
-				//Propaga panico
-				if(panicscales.get(agent) > panicscales.get(i))
-					panicscales.set(i, panicscales.get(agent));
-				else
-					panicscales.set(agent, panicscales.get(i));
-				
-				//ver se alguem sabe onde e a saida
-				if(kArea.get(i) == true)
-					kArea.set(agent, true);
-				
-				//Se agent ve outro que esta a andar em direcao a algo, segue quem ele estaá a seguir ou ele se nao esta a seguir ninguem (lider)
-				if(herding.get(i) && !herding.get(agent)) {
-					herding.set(agent, true);
-					if(following.get(i) != -1)
-						following.set(agent, following.get(i));
-					else
-						following.set(agent, i);
-				}
-				
-				//ver se alguem precisa de ajuda e ajuda se puder
-				if(ishelping.get(agent) == -1 && injscales.get(agent) < 0.5 && injscales.get(i) >= 0.5 && !ishelping.contains(i) && !isDead(i)) {
-					
-					if(agent >= nAgents)
-						ishelping.set(agent, i);
-					else {
-						double prob = random.nextInt(10)/10.0;
-						if(helpful(i) > prob) {
-							ishelping.set(agent, i);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	/*private Location lookaround(int agent) {
-		for(int i = 0; i < nAgents ; i++) {
-			Location pos;
-			if((pos = doesAgSeeIt(agent, getAgPos(i))) != null && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
-				//propagar panico
-				if(panicscales.get(i) > panicscales.get(agent)) {
-					panicscales.set(agent, panicscales.get(i));
-				}
-				//ver se alguem sabe onde e a saida
-				if(kArea.get(i) == true) {
-					kArea.set(agent, true);
-					return pos;
-				}
-				
-				//ver se alguem esta a ir para algum lado
-				if(herding.get(i) == true) {
-					herding.set(agent, true);
-					return pos;
-				}
-				
-				//ver se alguem precisa de ajuda
-				if(ishelping.get(agent) != -1) {
-					double prob = 0;
-
-					prob = random.nextInt(10)/10.0;
-					if(!ishelping.contains(i) && agentSpeed(agent) > agentSpeed(i) && helpful(i) > prob) {
-						setIsHelping(agent, i);
-					}
-				}
-			}		
-		}
-		return null;
-	}*/
-
-	public void agentWait() {
-
-		try {
-			Thread.sleep(3000 + random.nextInt(5)*1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Creates a generic accident (in this case, represented by fire) in a random location.
-	 */
-	public void create_fire() {
-		int x, y;
-
-		try {
-			do {
-				x = random.nextInt(model.getWidth());
-				y = random.nextInt(model.getHeight());
-			}while(!model.isFree(x,y));
-
-			model.add(RoomModel.FIRE, x, y);
-			
-			firePositions.add(new Location(x,y));
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	/**
-	 * Environment change that happens each cycle.
-	 * 1. Fire spread
-	 * TO-DO: MORE.
-	 */
-	public void environment() {
-		spreadFire();
-
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	/**
 	 * Spreads the fire each cycle with a probability of FIRESPREAD.	
@@ -578,21 +300,8 @@ public class RoomModel extends GridWorldModel {
 	 * @param agName Agent.
 	 * @return Index of the agent in the model.
 	 */
-	public int getAgentByName(String agName) {
+	private int getAgentByName(String agName) {
 		return Integer.parseInt(agName.substring(3, agName.length()));
-	}
-	
-	public ArrayList<Location> find(int obj){
-		ArrayList<Location> objs = new ArrayList<Location>();
-		
-		for(int i = 0; i < model.data.length; i++) {
-			for(int j = 0; j < model.data[i].length; j++) {
-				if(data[i][j] == obj)
-					objs.add(new Location(i,j));
-			}
-		}
-		
-		return objs;
 	}
 
 	/**
@@ -614,7 +323,7 @@ public class RoomModel extends GridWorldModel {
 	    	return points.get(Math.toIntExact(Math.round(agentSpeed(ag))));
 	}
 
-	public Vector<Location> linepp(Location p0, Location p1) {
+	private Vector<Location> linepp(Location p0, Location p1) {
 		Vector<Location> points = new Vector<Location>();
 		if(p0.equals(p1)) {
 			points.add(p0);
@@ -659,6 +368,190 @@ public class RoomModel extends GridWorldModel {
 		return ((1 - injscales.get(ag))*panicscales.get(ag)*MAXSPEED)/(1+is_aj);
 	}
 
+	private Location firedist(Location l) {
+		int dist = 11;
+		Location fire = null;
+
+		for(int i = 0; i < firePositions.size(); i++) {
+			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && linepp(l, firePositions.elementAt(i)) != null) {
+				dist = l.distanceManhattan(firePositions.elementAt(i));
+				fire = firePositions.elementAt(i);
+			}
+		}
+		return fire;
+	}
+	
+	private double helpful(int i) {
+		return (1 - panicscales.get(i))*selflessness.get(i);
+	}
+
+	public void moveRandomly(String agName) {
+
+		int agent = getAgentByName(agName);
+		
+		if(agent < nAgents) {
+			
+			Location r1 = getAgPos(agent);
+			int randomX, randomY;
+	
+			do {
+				randomX = random.nextInt(3) - 1;
+				randomY = random.nextInt(3) - 1;
+			}while(r1.x + randomX < 0 || r1.x + randomX > getWidth() || r1.y + randomY < 0 || r1.y + randomY > getHeight() || !model.isFreeOfObstacle( r1.x + randomX,  r1.y + randomY) || !model.isFree(FIRE,new Location(r1.x + randomX,  r1.y + randomY)));
+	
+			r1.x += randomX;
+			r1.y += randomY;
+	
+			setAgPos(agent, r1);
+		} else {
+			setAgPos(agent, getAgPos(agent));
+		}
+	}
+	
+	public void moveAlert(String agName) {
+		int agent = getAgentByName(agName);
+		
+		if(!safe.get(agent)) {
+			Location currentPosition = getAgPos(agent);
+			Vertex current = graph.getVertex(currentPosition);
+			Vertex goal = graph.getVertex(currentPosition);
+			
+			lookAround(agent);
+			
+			int agHelping;
+			//agent being helped
+			if((agHelping = ishelping.indexOf(agent)) != -1) {
+				setAgPos(agent, getAgPos(agHelping));
+				return;
+			}
+			
+			//Se agent sabe a area, vai em direcao a saida
+			if(kArea.get(agent)) {
+				Location closestDoor = null;
+				int distanceExit = Integer.MAX_VALUE;
+				
+				//Encontra main door mais proxima
+				for(Location location : mainDoorsPositions)
+					if(currentPosition.distanceManhattan(location) < distanceExit)
+						closestDoor = location;
+				
+				if(closestDoor != null)
+					goal = graph.getVertex(closestDoor);
+			}
+			
+			//Se eu estou a seguir um caminho
+			else if(herding.get(agent)) {
+				
+				//Se nao estou a seguir ninguem, sou o lider (fui eu que ativei o A*), vou ate a saida, 
+				//mas nao a melhor saida, para simular que o agente nao sabe a area
+				if(following.get(agent) == -1)
+					goal = graph.getVertex(doorSelected.get(agent));
+				//Se estou a seguir alguem, calculo o melhor caminho ate a esse agente
+				else
+					goal = graph.getVertex(getAgPos(following.get(agent)));
+			}
+			
+			else {
+				herding.set(agent, true);
+				
+				Location mainDoor = mainDoorsPositions.get(random.nextInt(mainDoorsPositions.size()));
+				doorSelected.set(agent, mainDoor);
+				goal = graph.getVertex(mainDoor);
+			}
+			
+			List<Edge> path = AStar.aStar(graph, current, goal);
+			if(path != null && path.size() > 0)
+				setAgPos(agent, path.get(0).getNeighbor(current).getLocation());
+			
+			if(mainDoorsPositions.contains(getAgPos(agent)))
+				safe.set(agent, true);
+			return;
+		}
+	}
+	
+	private void lookAround(int agent) {
+		
+		for(int i = 0; i < nAgents + nSecurity ; i++) {
+			
+			if(doesAgSeeIt(agent, getAgPos(i)) != null && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
+				
+				//Propaga panico
+				if(panicscales.get(agent) > panicscales.get(i))
+					panicscales.set(i, panicscales.get(agent));
+				else
+					panicscales.set(agent, panicscales.get(i));
+				
+				//ver se alguem sabe onde e a saida
+				if(kArea.get(i) == true)
+					kArea.set(agent, true);
+				
+				//Se agent ve outro que esta a andar em direcao a algo, segue quem ele estaá a seguir ou ele se nao esta a seguir ninguem (lider)
+				if(herding.get(i) && !herding.get(agent)) {
+					herding.set(agent, true);
+					following.set(agent, i);
+				}
+				
+				//ver se alguem precisa de ajuda e ajuda se puder
+				if(ishelping.get(agent) == -1 && injscales.get(agent) < 0.5 && injscales.get(i) >= 0.5 && !ishelping.contains(i) && !isDead(i)) {
+					
+					if(agent >= nAgents)
+						ishelping.set(agent, i);
+					else {
+						double prob = random.nextInt(10)/10.0;
+						if(helpful(i) > prob) {
+							ishelping.set(agent, i);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	public void agentWait() {
+
+		try {
+			Thread.sleep(3000 + random.nextInt(5)*1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Creates a generic accident (in this case, represented by fire) in a random location.
+	 */
+	public void createFire() {
+		int x, y;
+
+		try {
+			do {
+				x = random.nextInt(model.getWidth());
+				y = random.nextInt(model.getHeight());
+			}while(!model.isFree(x,y));
+
+			model.add(RoomModel.FIRE, x, y);
+			
+			firePositions.add(new Location(x,y));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Environment change that happens each cycle.
+	 * 1. Fire spread
+	 * TO-DO: MORE.
+	 */
+	public void environment() {
+		spreadFire();
+
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void updateInjuryPanicScale() {
 
 		for(int i = 0; i < nAgents + nSecurity ; i++) {
@@ -707,23 +600,6 @@ public class RoomModel extends GridWorldModel {
 				setAgInjScale(i, Math.min(injscales.get(i)*hurts,1));
 			}
 		}
-	}
-
-	public Location firedist(Location l) {
-		int dist = 11;
-		Location fire = null;
-
-		for(int i = 0; i < firePositions.size(); i++) {
-			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && linepp(l, firePositions.elementAt(i)) != null) {
-				dist = l.distanceManhattan(firePositions.elementAt(i));
-				fire = firePositions.elementAt(i);
-			}
-		}
-		return fire;
-	}
-	
-	private double helpful(int i) {
-		return (1 - panicscales.get(i))*selflessness.get(i);
 	}
 
 	/**
