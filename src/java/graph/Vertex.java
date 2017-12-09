@@ -58,7 +58,7 @@ public class Vertex {
      * @param index The index of the Edge to retrieve
      * @return Edge The Edge at the specified index in this.neighborhood
      */
-    public Edge getNeighbor(int index){
+    public Edge getNeighbor(int index) {
         return this.neighborhood.get(index);
     }
     
@@ -126,8 +126,16 @@ public class Vertex {
      * @return ArrayList<Edge> A copy of this.neighborhood. Modifying the returned
      * ArrayList will not affect the neighborhood of this Vertex
      */
-    public ArrayList<Edge> getNeighbors(){
+    public ArrayList<Edge> getNeighbors() {
         return new ArrayList<Edge>(this.neighborhood);
     }
-
+    
+    /**
+     * 
+     * @return Edge The edge connecting this vertex to another one
+     */
+    public Edge getEdge(Vertex next) {
+    	return this.neighborhood.get(this.neighborhood.indexOf(new Edge(this, next)));
+    }
+    
 }

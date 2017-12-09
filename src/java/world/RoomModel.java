@@ -197,7 +197,7 @@ public class RoomModel extends GridWorldModel {
 				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
 					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
 			}
-		}			
+		}
 	}
 
 	private RoomModel(int w, int h, int nAgs) {
