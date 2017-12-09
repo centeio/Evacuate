@@ -34,7 +34,7 @@ public class AStar<T extends Comparable<T>> {
      * @return 
      *          List of Edges to get from start to end or NULL if no path exists.
      */
-    public List<Edge> aStar(Graph graph, Vertex start, Vertex goal) {
+    public static List<Edge> aStar(Graph graph, Vertex start, Vertex goal) {
         final int size = graph.getVertices().size(); // used to size data structures appropriately
         final Set<Vertex> closedSet = new HashSet<Vertex>(size); // The set of nodes already evaluated.
         final List<Vertex> openSet = new ArrayList<Vertex>(size); // The set of tentative nodes to be evaluated, initially containing the start node
@@ -100,7 +100,7 @@ public class AStar<T extends Comparable<T>> {
      * Default distance is the edge cost. If there is no edge between the start and next then
      * it returns Integer.MAX_VALUE;
      */
-    protected int distanceBetween(Vertex start, Vertex next) {
+    protected static int distanceBetween(Vertex start, Vertex next) {
         for (Edge e : start.getNeighbors()) {
             if (e.getNeighbor(start).equals(next))
                 return e.getCost();
@@ -112,11 +112,11 @@ public class AStar<T extends Comparable<T>> {
      * Default heuristic: cost to each vertex is 1.
      */
     @SuppressWarnings("unused") 
-    protected int heuristicCostEstimate(Vertex start, Vertex goal) {
+    protected static int heuristicCostEstimate(Vertex start, Vertex goal) {
         return 1;
     }
 
-    private List<Edge> reconstructPath(Map<Vertex,Vertex> cameFrom, Vertex current) {
+    private static List<Edge> reconstructPath(Map<Vertex,Vertex> cameFrom, Vertex current) {
         final List<Edge> totalPath = new ArrayList<Edge>();
 
         while (current != null) {

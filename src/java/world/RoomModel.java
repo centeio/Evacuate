@@ -3,9 +3,11 @@ package world;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
+import graph.AStar;
 import graph.*;
 import jason.environment.grid.GridWorldModel;
 import jason.environment.grid.Location;
@@ -35,6 +37,7 @@ public class RoomModel extends GridWorldModel {
 	public ArrayList<Integer> ishelping;
 	public ArrayList<Boolean> safe = new ArrayList<Boolean>();
 	public ArrayList<Boolean> kArea = new ArrayList<Boolean>();
+	public ArrayList<Boolean> herding = new ArrayList<Boolean>();
 
 	// singleton pattern
 	protected static RoomModel model = null;
@@ -110,6 +113,7 @@ public class RoomModel extends GridWorldModel {
 				model.injscales.add(i, 0.0);
 				model.safe.add(i, false);
 				model.kArea.add(i, false);
+				model.herding.add(i, false);
 				if(i < nbAgs) {
 					double selflessness = random.nextInt(10)/10.0;
 					model.selflessness.add(i, selflessness);
@@ -267,7 +271,6 @@ public class RoomModel extends GridWorldModel {
 	
 	public void move_alert(String agName) {
 		int agent = getAgentByName(agName);
-		kArea.set(agent, false);
 		Location oldloc = getAgPos(agent);
 		Location newloc = null;
 		
@@ -278,82 +281,50 @@ public class RoomModel extends GridWorldModel {
 			return;
 		}
 				
+		//looks for exits
+		Location bestexit = null;
+		int distexit = Integer.MAX_VALUE;
 		for(Location door : mainDoorsPositions) {
 			if(oldloc == door) {
 				model.safe.set(agent, true);
 				model.kArea.set(agent, true);
 				return;
 			}
+			//nearest exit door
+			if(oldloc.distanceManhattan(door) < distexit) {
+				distexit = oldloc.distanceManhattan(door);
+				bestexit = door;
+			}
+			
 			if((newloc = doesAgSeeIt(agent, door)) != null) {
 				model.kArea.set(agent, true);
 				setAgentPos(agent,newloc);
 				return;
 			}
 		}
-		//checks if anybody knows
-		if((newloc = lookaround(agent)) != null) {
-			setAgentPos(agent,newloc);			
-		}
-		//finds best door
-		Location bestdoor = null;
-		int bestdist = Integer.MAX_VALUE;
-		int i = 0;
-		for(Location door : doorsPositions) {
-			if(doesAgSeeIt(agent, door) != null && model.doorsDistance.get(i) < bestdist && model.doorsVisited.get(agent).get(i)) {
-				bestdoor = door;
-				bestdist = model.doorsDistance.get(i);
-				i++;
+		//if agent knows the way out OR nobody around them can tell
+		if(model.getkArea(agent) || (newloc = lookaround(agent)) == null){
+			//finds best path
+			Vertex current = graph.getVertex(oldloc);
+			Vertex goal;
+			if(bestexit != null)
+				goal = graph.getVertex(bestexit);
+			else
+				goal = graph.getVertex(mainDoorsPositions.get(0));
+			
+			List<Edge> path = AStar.aStar(graph,current,goal);
+			if(path != null) {
+				herding.set(agent, true);
+				setAgentPos(agent, path.get(0).getNeighbor(current).getLocation());
+				return;
 			}
 		}
-		if(bestdoor != null) {
-			model.kArea.set(agent, true);
-			setAgentPos(agent, doesAgSeeIt(agent, bestdoor));
+		else {
+			setAgentPos(agent, newloc);
 			return;
 		}
 		
-		//tries any not worse path		
-		Location fire = firedist(oldloc);
-		int firedist = -1;
-		if(fire != null)
-			firedist = fire.distanceManhattan(oldloc);
-		
-		newloc = new Location(oldloc.x-1,oldloc.y);
-		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
-			Location newfire = firedist(newloc);
-			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
-				setAgentPos(agent, newloc);
-				return;
-			}
-		}
-		
-		newloc = new Location(oldloc.x+1,oldloc.y);
-		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
-			Location newfire = firedist(newloc);
-			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
-				setAgentPos(agent, newloc);
-				return;
-			}
-		}
-		
-		newloc = new Location(oldloc.x,oldloc.y-1);
-		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
-			Location newfire = firedist(newloc);
-			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
-				setAgentPos(agent, newloc);
-				return;
-			}
-		}
-		
-		newloc = new Location(oldloc.x,oldloc.y+1);
-		if(newloc.x >= 0 && newloc.x < getWidth() && newloc.y >= 0 && newloc.y < getHeight() && model.isFreeOfObstacle(newloc) && model.isFree(FIRE, newloc)) {
-			Location newfire = firedist(newloc);
-			if(newfire == null || !(newfire.distanceManhattan(newloc) < firedist)) {
-				setAgentPos(agent, newloc);
-				return;
-			}
-		}
-		//tries anything
-		move_randomly(agName);
+
 	}
 
 	private Location lookaround(int agent) {
@@ -369,6 +340,13 @@ public class RoomModel extends GridWorldModel {
 					kArea.set(agent, true);
 					return pos;
 				}
+				
+				//ver se alguem está a ir para algum lado
+				if(herding.get(i) == true) {
+					herding.set(agent, true);
+					return pos;
+				}
+				
 				//ver se alguem precisa de ajuda
 				if(ishelping.get(agent) != -1) {
 					double prob = 0;
