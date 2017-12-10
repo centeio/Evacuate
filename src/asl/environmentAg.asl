@@ -53,13 +53,4 @@
 	
 +shutdown : true <-
 	.stopMAS.
-	
-+width(_) : true <-
-	.print("Received width").
-+height(_) : true <-
-	.print("Received height").
-+createAgents(_) : true <-
-	.print("Received agents").
-+createSecurity(_) : true <-
-	.print("Received security").
 

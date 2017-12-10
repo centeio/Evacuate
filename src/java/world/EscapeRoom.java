@@ -31,43 +31,41 @@ public class EscapeRoom extends Environment {
     public static final Term    safe = Literal.parseLiteral("safeagent");
     public static final Term    setKnowlege = Literal.parseLiteral("setKnowledge");
     public static final Term    initialize = Literal.parseLiteral("initialize");
-    private static int 	numberAgents = 10;
-    private static int 	numberSecurity = 2;
-    private static int width = 30;
-    private static int height = 20;
-    private static int createWidth = 100;
-    private static int createHeight = 55;
-    private static int createAgents = 15;
-    private static int createSecurity = 5;
-    private static String 	mode = "run";
-    private static String map = "worldMaps/Map2.txt";
+    private static int 	numberAgents = 15;
+    private static int 	numberSecurity = 5;
+    private static int width = 48;
+    private static int height = 27;
+    private static String mode = "create";
+    private static String map = "worldMaps/Map1.txt";
 
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
     public void init(String[] args) {
         super.init(args);
         
-        FileReader file;
-		try {
-			file = new FileReader(map);
-			BufferedReader br = new BufferedReader(file);
-			
-			String line = br.readLine();
-			String[] lineValues = line.split("\\s+");
-			width = Integer.parseInt(lineValues[0]);
-			height = Integer.parseInt(lineValues[1]);
-			numberAgents = Integer.parseInt(lineValues[2]);
-			numberSecurity = Integer.parseInt(lineValues[3]);
-			
-			br.close();
-		}
-		catch(Exception e) {
-			System.out.println(e.getMessage());
-		}
-        
-        model = RoomModel.create(width, height, numberAgents, numberSecurity, map);
-        view = new RoomView(model, "Escape Room", 1800, numberAgents, numberSecurity);
-        model.setView(view);
+        if(mode.equals("run")) {
+        	FileReader file;
+    		try {
+    			file = new FileReader(map);
+    			BufferedReader br = new BufferedReader(file);
+    			
+    			String line = br.readLine();
+    			String[] lineValues = line.split("\\s+");
+    			width = Integer.parseInt(lineValues[0]);
+    			height = Integer.parseInt(lineValues[1]);
+    			numberAgents = Integer.parseInt(lineValues[2]);
+    			numberSecurity = Integer.parseInt(lineValues[3]);
+    			
+    			br.close();
+    		}
+    		catch(Exception e) {
+    			System.out.println(e.getMessage());
+    		}
+            
+            model = RoomModel.create(width, height, numberAgents, numberSecurity, map);
+            view = new RoomView(model, "Escape Room", 1800, numberAgents, numberSecurity);
+            model.setView(view);
+        }
     }
 
     @Override
@@ -269,16 +267,16 @@ public class EscapeRoom extends Environment {
 				
 			} else {
 				
-				Literal width = Literal.parseLiteral("width(" + createWidth + ")");
-				addPercept("environmentAg", width);
+				Literal createWidth = Literal.parseLiteral("width(" + width + ")");
+				addPercept("environmentAg", createWidth);
 				
-				Literal height = Literal.parseLiteral("height(" + createHeight + ")");
-				addPercept("environmentAg", height);
+				Literal createHeight = Literal.parseLiteral("height(" + height + ")");
+				addPercept("environmentAg", createHeight);
 				
-				Literal createAgents = Literal.parseLiteral("createAgents(" + EscapeRoom.createAgents + ")");
+				Literal createAgents = Literal.parseLiteral("createAgents(" + numberAgents + ")");
 				addPercept("environmentAg", createAgents);
 				
-				Literal createSecurity = Literal.parseLiteral("createSecurity(" + EscapeRoom.createSecurity + ")");
+				Literal createSecurity = Literal.parseLiteral("createSecurity(" + numberSecurity + ")");
 				addPercept("environmentAg", createSecurity);
 			}
 			
