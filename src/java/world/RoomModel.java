@@ -160,60 +160,62 @@ public class RoomModel extends GridWorldModel {
 		}
 		
 		for(Location p0 : model.graph.vertexKeys()) {
-			if(p0.x > 0) {
-				//LEFT
-				Location left = new Location(p0.x-1, p0.y);
-				if(model.data[left.x][left.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(left));
-			}
-			
-			if(p0.x < model.data.length - 1) {
-				//RIGHT
-				Location right = new Location(p0.x+1, p0.y);
-				if(model.data[right.x][right.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(right));
-			}
-			
-			if(p0.y > 0) {
-				//TOP
-				Location top = new Location(p0.x, p0.y-1);
-				if(model.data[top.x][top.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(top));
-			}
-			
-			if(p0.y < model.data[0].length - 1) {
-				//BOTTOM
-				Location bottom = new Location(p0.x, p0.y+1);
-				if(model.data[bottom.x][bottom.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(bottom));
-			}
-			
-			if(p0.x > 0 && p0.y > 0) {
-				//LEFT - TOP
-				Location dg = new Location(p0.x-1, p0.y-1);
-				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
-			}
-			
-			if(p0.x > 0 && p0.y < model.data[0].length - 1) {
-				//LEFT - BOTTOM
-				Location dg = new Location(p0.x-1, p0.y+1);
-				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
-			}
-			
-			if(p0.x < model.data.length - 1 && p0.y > 0) {
-				//RIGHT - TOP
-				Location dg = new Location(p0.x+1, p0.y-1);
-				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
-			}
-			
-			if(p0.x < model.data.length - 1 && p0.y < model.data[0].length - 1) {
-				//RIGHT - BOTTOM
-				Location dg = new Location(p0.x+1, p0.y+1);
-				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
-					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+			if(p0 != MAINEXIT) {
+				if(p0.x > 0) {
+					//LEFT
+					Location left = new Location(p0.x-1, p0.y);
+					if(model.data[left.x][left.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(left));
+				}
+				
+				if(p0.x < model.data.length - 1) {
+					//RIGHT
+					Location right = new Location(p0.x+1, p0.y);
+					if(model.data[right.x][right.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(right));
+				}
+				
+				if(p0.y > 0) {
+					//TOP
+					Location top = new Location(p0.x, p0.y-1);
+					if(model.data[top.x][top.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(top));
+				}
+				
+				if(p0.y < model.data[0].length - 1) {
+					//BOTTOM
+					Location bottom = new Location(p0.x, p0.y+1);
+					if(model.data[bottom.x][bottom.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(bottom));
+				}
+				
+				if(p0.x > 0 && p0.y > 0) {
+					//LEFT - TOP
+					Location dg = new Location(p0.x-1, p0.y-1);
+					if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+				}
+				
+				if(p0.x > 0 && p0.y < model.data[0].length - 1) {
+					//LEFT - BOTTOM
+					Location dg = new Location(p0.x-1, p0.y+1);
+					if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+				}
+				
+				if(p0.x < model.data.length - 1 && p0.y > 0) {
+					//RIGHT - TOP
+					Location dg = new Location(p0.x+1, p0.y-1);
+					if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+				}
+				
+				if(p0.x < model.data.length - 1 && p0.y < model.data[0].length - 1) {
+					//RIGHT - BOTTOM
+					Location dg = new Location(p0.x+1, p0.y+1);
+					if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
+						model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
+				}
 			}
 		}
 	}
@@ -484,7 +486,7 @@ public class RoomModel extends GridWorldModel {
 			    	setAgPos(agent, path.get(path.size()-1).getTwo().getLocation());
 			    }
 			    else {
-			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent))) - 1).getTwo().getLocation());
+			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent)))).getTwo().getLocation());
 			    }
 			}
 				
