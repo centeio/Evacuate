@@ -129,7 +129,6 @@ public class EscapeRoom extends Environment {
       
 	private void updatePercepts() {
         
-        model.updateInjuryPanicScale();
         int count = 0;
         
         for(int i = 0; i < numberAgents; i++) {

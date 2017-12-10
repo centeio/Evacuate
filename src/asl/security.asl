@@ -49,7 +49,7 @@
 
 +safe(X) <-
 	.my_name(N);
-	killagent;
+	safeagent;
 	.kill_agent(N).
 	
 +phonecall[source(Ag)] <-

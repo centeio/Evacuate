@@ -406,6 +406,11 @@ public class RoomModel extends GridWorldModel {
 
 		int agent = getAgentByName(agName);
 		
+		if(firedist(getAgPos(agent)) != null) {
+			panicscales.set(agent, 1.0);
+			return;
+		}
+		
 		if(agent < nAgents) {
 			
 			Location r1 = getAgPos(agent);
@@ -461,29 +466,32 @@ public class RoomModel extends GridWorldModel {
 			
 			else {
 				herding.set(agent, true);
-				
 				goal = graph.getVertex(MAINEXIT);
 			}
 			
 			List<Edge> path = AStar.aStar(graph, current, goal);
+			
+			if(path.size() == 1) {
+				safe.set(agent, true);
+				return;
+			}
 	
-			if(path != null && path.size() > 0 && Math.round(agentSpeed(agent)) != 0) {
-			    if(Math.round(agentSpeed(agent)) >= path.size()) {
-			    	setAgPos(agent, path.get(path.size()-1).getTwo().getLocation());
+			if(path != null && path.size() > 1 && Math.round(agentSpeed(agent)) != 0) {
+			    if(Math.round(agentSpeed(agent)) >= path.size() - 1) {
+			    	setAgPos(agent, path.get(path.size() - 2).getTwo().getLocation());
 			    }
 			    else {
-			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent)))).getTwo().getLocation());
+			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent) - 1))).getTwo().getLocation());
 			    }
 			}
-				
 			
-			if(mainDoorsPositions.contains(getAgPos(agent)))
-				safe.set(agent, true);
 			return;
 		}
 	}
 	
 	private void lookAround(int agent) {
+		Location agi = getAgPos(agent);
+		double prob = 0;
 		
 		if(ishelping.get(agent) != -1 && isDead(ishelping.get(agent))) {
 			ishelping.set(agent, -1);
@@ -515,13 +523,56 @@ public class RoomModel extends GridWorldModel {
 					if(agent >= nAgents)
 						ishelping.set(agent, i);
 					else {
-						double prob = random.nextInt(10)/10.0;
+						prob = random.nextInt(10)/10.0;
 						if(helpful(i) > prob) {
 							ishelping.set(agent, i);
 						}
 					}
 				}
 			}
+			
+			//Update injury
+			if(agent != i) {
+				Location agj = getAgPos(i);
+				
+				if(agi.equals(agj) && !(ishelping.get(agent) == i || ishelping.get(i) == agent) && !safe.get(i)) {
+					
+					//probability of agent hurting i
+					prob = random.nextInt(10)/10.0;
+					if((1-helpful(agent)) > prob) {
+						injscales.set(i, Math.min(Math.max(0.1, injscales.get(i)*1.01),1));
+					}
+					
+					//probability of i hurting agent
+					prob = random.nextInt(10)/10.0;
+					if((1-helpful(i)) > prob) {
+						injscales.set(agent, Math.min(Math.max(0.1, injscales.get(agent)*1.01),1));
+					}
+				}
+			}
+		}
+		
+		//Continuation update injury
+		//Near fire
+		Location fire;
+		if((fire = firedist(agi)) != null) {
+			panicscales.set(agent, 1.0);
+			
+			int dist = agi.distanceManhattan(fire);
+			if(dist <= 2) {
+				injscales.set(agent, Math.min(1,injscales.get(agent)+(1-dist*0.2)));
+			}
+		}
+		
+		//see if agent fell
+		prob = random.nextInt(100);
+		if(prob == 1) {
+			//agent falls
+			double hurts = 1.1;
+			if(random.nextInt(1) == 0) {
+				hurts = 1.2;
+			}
+			injscales.set(agent, Math.min(Math.max(0.1, injscales.get(agent)*hurts),1));
 		}
 	}
 
@@ -569,55 +620,6 @@ public class RoomModel extends GridWorldModel {
 			e.printStackTrace();
 		}
 	}
-	
-	public void updateInjuryPanicScale() {
-
-		for(int i = 0; i < nAgents + nSecurity ; i++) {
-			Location agi = getAgPos(i);
-			double prob = 0;
-			
-			//see if another agent is hurting, i.e. see if two are in the same cell
-			for(int j = i + 1; j < nAgents + nSecurity ; j++) {
-				Location agj = getAgPos(j);
-
-				if(agi.equals(agj) && !(ishelping.get(i) == j || ishelping.get(j) == i)) {
-					//probability of i hurting j
-					prob = random.nextInt(10)/10.0;
-					if((1-helpful(i)) > prob) {
-						setAgInjScale(j, Math.min(Math.max(0.1, injscales.get(j)*1.01),1));
-					}
-
-					//probability of j hurting i
-					prob = random.nextInt(10)/10.0;
-					if((1-helpful(j)) > prob) {
-						setAgInjScale(i, Math.min(Math.max(0.1,injscales.get(i)*1.01),1));
-					}
-				}
-			}
-
-			//see if agent near to accident or inside the accident
-			Location fire;
-			if((fire = firedist(agi)) != null) {
-				setAgPanic(i, 1.0);
-				
-				int dist = agi.distanceManhattan(fire);
-				if(dist <= 2) {
-					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
-				}
-			}
-
-			//see if agent fell
-			prob = random.nextInt(100);
-			if(prob == 1) {
-				//agent falls
-				double hurts = 1.1;
-				if(random.nextInt(1) == 0) {
-					hurts = 1.2;
-				}
-				setAgInjScale(i, Math.min(injscales.get(i)*hurts,1));
-			}
-		}
-	}
 
 	/**
 	 * Changes the panic scale of every agent after hearing the alarm ring.
@@ -660,7 +662,6 @@ public class RoomModel extends GridWorldModel {
 	}
 
 	public void kill(String agName) {
-		agentDead.set(getAgentByName(agName), true);
 		times.set(getAgentByName(agName), System.currentTimeMillis() - times.get(getAgentByName(agName)));
 		setAgPos(getAgentByName(agName), getAgPos(getAgentByName(agName)));
 	}
@@ -678,6 +679,7 @@ public class RoomModel extends GridWorldModel {
 	}
 
 	public void died(String agName) {
+		agentDead.set(getAgentByName(agName), true);
 		nDead++;
 	}
 	
