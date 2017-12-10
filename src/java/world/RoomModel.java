@@ -21,7 +21,7 @@ public class RoomModel extends GridWorldModel {
 	public static final int FIRE = 32;
 	private static final int FIRESPREAD = 25;
 	private static final double MAXSPEED = 2.0;
-	private static final Location MAINEXIT = new Location(Integer.MAX_VALUE, Integer.MAX_VALUE);
+	public static final Location MAINEXIT = new Location(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
 	private static Random random = new Random(System.currentTimeMillis());
 
@@ -480,19 +480,21 @@ public class RoomModel extends GridWorldModel {
 			}
 			
 			List<Edge> path = AStar.aStar(graph, current, goal);
+			
+			if(path.size() == 1) {
+				safe.set(agent, true);
+				return;
+			}
 	
-			if(path != null && path.size() > 0 && Math.round(agentSpeed(agent)) != 0) {
-			    if(Math.round(agentSpeed(agent)) >= path.size()) {
-			    	setAgPos(agent, path.get(path.size()-1).getTwo().getLocation());
+			if(path != null && path.size() > 1 && Math.round(agentSpeed(agent)) != 0) {
+			    if(Math.round(agentSpeed(agent)) >= path.size() - 1) {
+			    	setAgPos(agent, path.get(path.size() - 2).getTwo().getLocation());
 			    }
 			    else {
 			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent)))).getTwo().getLocation());
 			    }
 			}
-				
 			
-			if(mainDoorsPositions.contains(getAgPos(agent)))
-				safe.set(agent, true);
 			return;
 		}
 	}
@@ -674,7 +676,6 @@ public class RoomModel extends GridWorldModel {
 	}
 
 	public void kill(String agName) {
-		agentDead.set(getAgentByName(agName), true);
 		times.set(getAgentByName(agName), System.currentTimeMillis() - times.get(getAgentByName(agName)));
 		setAgPos(getAgentByName(agName), getAgPos(getAgentByName(agName)));
 	}
@@ -693,6 +694,6 @@ public class RoomModel extends GridWorldModel {
 
 	public void died(String agName) {
 		nDead++;
-	}
-	
+		agentDead.set(getAgentByName(agName), true);
+	}	
 }
