@@ -14,7 +14,7 @@ public class RoomView extends GridWorldView {
 	public RoomView(RoomModel model, String title, int windowSize, int numberAgents, int numberSecurity) {
 		super(model, title, windowSize);
 		setVisible(true);
-		setSize(1200, 600);
+		setSize(windowSize, 9 * windowSize / 16);
 		this.numberAgents = numberAgents;
 	}
 	
