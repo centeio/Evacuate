@@ -10,11 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * In computer science, A* is a computer algorithm that is widely used in path finding and graph traversal, the process 
- * of plotting an efficiently traversable path between multiple points, called nodes.
- * <p>
- * @see <a href="https://en.wikipedia.org/wiki/A*_search_algorithm">A* Algorithm (Wikipedia)</a>
- * <br>
+ * Adapted from:
  * @author Justin Wetherell <phishman3579@gmail.com>
  */
 public class AStar<T extends Comparable<T>> {

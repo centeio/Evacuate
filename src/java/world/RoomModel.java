@@ -25,7 +25,7 @@ public class RoomModel extends GridWorldModel {
 	private static Random random = new Random(System.currentTimeMillis());
 
 	private Graph graph = new Graph();
-	private Vector<Location> firePositions = new Vector<Location>();
+	private static Vector<Location> firePositions = new Vector<Location>();
 	private Vector<Location> doorsPositions = new Vector<Location>();
 	private ArrayList<Integer> doorsDistance = new ArrayList<Integer>();
 	private ArrayList<Integer> following = new ArrayList<Integer>();
@@ -326,7 +326,7 @@ public class RoomModel extends GridWorldModel {
 	    return true;
 	}
 
-	private Vector<Location> linepp(Location p0, Location p1) {
+	private static Vector<Location> linepp(Location p0, Location p1) {
 		Vector<Location> points = new Vector<Location>();
 		if(p0.equals(p1)) {
 			points.add(p0);
@@ -371,7 +371,7 @@ public class RoomModel extends GridWorldModel {
 		return ((1 - injscales.get(ag))*panicscales.get(ag)*MAXSPEED)/(1+is_aj);
 	}
 
-	private Location firedist(Location l) {
+	public static Location firedist(Location l) {
 		int dist = 11;
 		Location fire = null;
 
@@ -447,8 +447,16 @@ public class RoomModel extends GridWorldModel {
 				
 				//Se nao estou a seguir ninguem, sou o lider (fui eu que ativei o A*), vou ate a saida, 
 				//mas nao a melhor saida, para simular que o agente nao sabe a area
-				if(following.get(agent) == -1)
+				if(following.get(agent) == -1) {
+					//procuro uma saída visível
+					for(Location location : mainDoorsPositions) {
+						if(doesAgSeeIt(agent, location)) {
+							doorSelected.set(agent, location);
+							break;
+						}
+					}
 					goal = graph.getVertex(doorSelected.get(agent));
+				}
 				//Se estou a seguir alguem, calculo o melhor caminho ate a esse agente
 				else
 					goal = graph.getVertex(getAgPos(following.get(agent)));
@@ -458,6 +466,13 @@ public class RoomModel extends GridWorldModel {
 				herding.set(agent, true);
 				
 				Location mainDoor = mainDoorsPositions.get(random.nextInt(mainDoorsPositions.size()));
+				
+				for(Location location : mainDoorsPositions) {
+					if(doesAgSeeIt(agent, location)) {
+						mainDoor = location;
+						break;
+					}
+				}
 				doorSelected.set(agent, mainDoor);
 				goal = graph.getVertex(mainDoor);
 			}

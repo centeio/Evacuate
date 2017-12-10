@@ -1,4 +1,4 @@
 Number of agents: 12
-Number of deaths: 4
-Average Time: 23391
-Median Time: 28353
+Number of deaths: 2
+Average Time: 25249
+Median Time: 19788

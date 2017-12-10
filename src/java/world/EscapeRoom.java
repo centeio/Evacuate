@@ -35,8 +35,8 @@ public class EscapeRoom extends Environment {
     private static int 	numberSecurity = 5;
     private static int width = 48;
     private static int height = 27;
-    private static String mode = "create";
-    private static String map = "worldMaps/Map1.txt";
+    private static String mode = "run";
+    private static String map = "worldMaps/Map3.txt";
 
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override

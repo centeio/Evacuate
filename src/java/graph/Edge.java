@@ -1,5 +1,8 @@
 package graph;
 
+import jason.environment.grid.Location;
+import world.*;
+
 /**
  * This class models an undirected Edge in the Graph implementation.
  * An Edge contains two vertices and a weight. If no weight is
@@ -131,6 +134,10 @@ public class Edge implements Comparable<Edge> {
     }
 
 	public int getCost() {
-		return 1;
+		Location fire;
+		if((fire = RoomModel.firedist(two.getLocation())) == null)
+			return 1;
+		return (12 - fire.distanceManhattan(two.getLocation()))*5;
+		
 	}   
 }
