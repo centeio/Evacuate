@@ -55,7 +55,7 @@ public class RoomView extends GridWorldView {
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
 		RoomModel model = (RoomModel)this.model;
 		
-		if(!model.isDead(id)) {
+		if(!model.isDead(id) && !model.isAgSafe(id)) {
 			String label;
 			
 			if(id >= numberAgents) {
@@ -75,7 +75,8 @@ public class RoomView extends GridWorldView {
 			g.setColor(Color.BLACK);
 			super.drawString(g, x, y, defaultFont, label);
 		}
-		else {
+		
+		else if(model.isDead(id)){
 			
 			g.drawLine(x * cellSizeW, y * cellSizeH, x  * cellSizeW + cellSizeW, y * cellSizeH + cellSizeH);
 	        g.drawLine(x * cellSizeW, y * cellSizeH + cellSizeH, x  * cellSizeW + cellSizeW, y * cellSizeH);

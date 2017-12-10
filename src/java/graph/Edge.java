@@ -137,7 +137,6 @@ public class Edge implements Comparable<Edge> {
 		Location fire;
 		if((fire = RoomModel.firedist(two.getLocation())) == null)
 			return 1;
-		return (12 - fire.distanceManhattan(two.getLocation()))*5;
-		
+		return (12 - fire.distanceManhattan(two.getLocation()))*100;
 	}   
 }
