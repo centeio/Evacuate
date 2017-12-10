@@ -114,8 +114,12 @@ public class RoomModel extends GridWorldModel {
 				
 				model.setAgPos(i, x, y);
 				model.panicscales.add(i, 0.0);
-				model.ishelping.add(i, -1);
-				model.injscales.add(i, 0.2);				
+				model.ishelping.add(i, -1);				
+				if(random.nextInt(100) < 50) {
+					model.injscales.add(i, 0.1 + random.nextInt(2)/10.0);
+				}
+				else
+					model.injscales.add(i, 0.0);
 				model.safe.add(i, false);
 				model.kArea.add(i, false);
 				model.herding.add(i, false);
@@ -373,7 +377,6 @@ public class RoomModel extends GridWorldModel {
 		double is_aj = 0;
 		if((ag2 = ishelping.get(ag)) != -1)
 			is_aj = injscales.get(ag2);
-
 		return ((1 - injscales.get(ag))*panicscales.get(ag)*MAXSPEED)/(1+is_aj);
 	}
 
@@ -485,12 +488,12 @@ public class RoomModel extends GridWorldModel {
 			
 			List<Edge> path = AStar.aStar(graph, current, goal);
 	
-			if(path != null && path.size() > 0) {
+			if(path != null && path.size() > 0 && Math.round(agentSpeed(agent)) != 0) {
 			    if(Math.round(agentSpeed(agent)) >= path.size()) {
 			    	setAgPos(agent, path.get(path.size()-1).getTwo().getLocation());
 			    }
 			    else {
-			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent)))).getTwo().getLocation());
+			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent))) - 1).getTwo().getLocation());
 			    }
 			}
 				
@@ -502,6 +505,10 @@ public class RoomModel extends GridWorldModel {
 	}
 	
 	private void lookAround(int agent) {
+		
+		if(ishelping.get(agent) != -1 && isDead(ishelping.get(agent))) {
+			ishelping.set(agent, -1);
+		}
 		
 		for(int i = 0; i < nAgents + nSecurity ; i++) {
 			
@@ -594,17 +601,17 @@ public class RoomModel extends GridWorldModel {
 			for(int j = i + 1; j < nAgents + nSecurity ; j++) {
 				Location agj = getAgPos(j);
 
-				if(agi.equals(agj)) {
+				if(agi.equals(agj) && !(ishelping.get(i) == j || ishelping.get(j) == i)) {
 					//probability of i hurting j
 					prob = random.nextInt(10)/10.0;
 					if((1-helpful(i)) > prob) {
-						setAgInjScale(j, Math.min(injscales.get(j)*1.1,1));
+						setAgInjScale(j, Math.min(Math.max(0.1, injscales.get(j)*1.01),1));
 					}
 
 					//probability of j hurting i
 					prob = random.nextInt(10)/10.0;
 					if((1-helpful(j)) > prob) {
-						setAgInjScale(i, Math.min(injscales.get(i)*1.1,1));
+						setAgInjScale(i, Math.min(Math.max(0.1,injscales.get(i)*1.01),1));
 					}
 				}
 			}
