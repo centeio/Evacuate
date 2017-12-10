@@ -144,9 +144,15 @@ public class RoomModel extends GridWorldModel {
 
 	private void createGraph() {
 		
-		for(int i = 0; i < model.data.length; i++)
-			for(int j = 0; j <  model.data[0].length; j++)
+		model.graph.addVertex(new Vertex(new Location(Integer.MAX_VALUE, Integer.MAX_VALUE)), true);
+				
+		for(int i = 0; i < model.data.length; i++) {
+			for(int j = 0; j <  model.data[0].length; j++) {					
 				model.graph.addVertex(new Vertex(new Location(i,j)), true);
+				if(model.data[i][j] == MAINDOOR)
+					model.graph.addEdge(model.graph.getVertex(new Location(i,j)), model.graph.getVertex(new Location(Integer.MAX_VALUE, Integer.MAX_VALUE)));
+			}
+		}
 		
 		for(Location p0 : model.graph.vertexKeys()) {
 			if(p0.x > 0) {
@@ -204,7 +210,7 @@ public class RoomModel extends GridWorldModel {
 				if(model.data[dg.x][dg.y] != GridWorldModel.OBSTACLE)
 					model.graph.addEdge(model.graph.getVertex(p0), model.graph.getVertex(dg));
 			}
-		}	
+		}
 	}
 
 	private RoomModel(int w, int h, int nAgs) {
@@ -227,7 +233,7 @@ public class RoomModel extends GridWorldModel {
 	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
 	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
 	public void setSafe(int i, boolean s) { safe.set(i, s); }
-	public void setKnowledge(int i, boolean s) { System.out.println("Setting agent " + i + "'s knowledge"); kArea.set(i, s); }
+	public void setKnowledge(int i, boolean s) { kArea.set(i, s); }
 	
 	/**
 	 * Spreads the fire each cycle with a probability of FIRESPREAD.	
