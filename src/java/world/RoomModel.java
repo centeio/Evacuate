@@ -14,12 +14,12 @@ import jason.environment.grid.Location;
 
 public class RoomModel extends GridWorldModel {
 
-	public static int nAgents;
-	public static int nSecurity;
+	private static int nAgents;
+	private static int nSecurity;
 	public static final int DOOR  = 8;
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
-	public static final int FIRESPREAD = 30;
+	private static final int FIRESPREAD = 30;
 	private static final double MAXSPEED = 4.0;
 
 	private static Random random = new Random(System.currentTimeMillis());
@@ -222,6 +222,7 @@ public class RoomModel extends GridWorldModel {
 	public void setAgInjScale(int i, double is) { injscales.set(i, is); }	
 	public void setIsHelping(int i, int ag) { ishelping.set(i, ag); }
 	public void setSafe(int i, boolean s) { safe.set(i, s); }
+	public void setKnowledge(int i, boolean s) { System.out.println("Setting agent " + i + "'s knowledge"); kArea.set(i, s); }
 	
 	/**
 	 * Spreads the fire each cycle with a probability of FIRESPREAD.	
@@ -300,7 +301,7 @@ public class RoomModel extends GridWorldModel {
 	 * @param agName Agent.
 	 * @return Index of the agent in the model.
 	 */
-	private int getAgentByName(String agName) {
+	public int getAgentByName(String agName) {
 		return Integer.parseInt(agName.substring(3, agName.length()));
 	}
 

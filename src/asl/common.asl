@@ -55,3 +55,11 @@
 	killagent;
 	.kill_agent(N).
 	
++kowledgeofArea(X, Y): Y == 0 & .random(N) & N < 0.1 & panicscale(_,P) & P > 0.5 <-
+	.print("Sending phone call");
+	.broadcast(tell, phonecall).
+	
++securityKnowledge <-
+	.print("NOW I KNOW!");
+	setKnowledge.
+	
