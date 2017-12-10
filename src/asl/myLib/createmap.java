@@ -7,14 +7,17 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Vector;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import jason.asSemantics.*;
 import jason.asSyntax.*;
@@ -31,21 +34,22 @@ public class createmap extends DefaultInternalAction {
     public Object execute(TransitionSystem ts, Unifier un, Term[] args) throws Exception {
 		// get the window title
 		
-		final int width = Integer.parseInt(args[0].toString()),
-				  height = Integer.parseInt(args[1].toString()),
-				  nAgents = Integer.parseInt(args[2].toString()),
-				  nSecurity = Integer.parseInt(args[3].toString());
+		final Vector<Integer> params = new Vector<>();
+		params.add(Integer.parseInt(args[0].toString()));
+		params.add(Integer.parseInt(args[1].toString()));
+		params.add(Integer.parseInt(args[2].toString()));
+		params.add(Integer.parseInt(args[3].toString()));
         
-        JComponent map = new JPanel(new GridLayout(height, width));
-        JComponent type = new JPanel(new GridLayout(5, 1));
+        final JComponent map = new JPanel(new GridLayout(params.get(1), params.get(0)));
+        final JComponent type = new JPanel(new GridLayout(6, 1));
         
         final JFrame frame = new JFrame("Create Map");
         frame.setPreferredSize(new Dimension(1024, 576));
         final JFrame buttonsFrame = new JFrame("Controls");
-        buttonsFrame.setPreferredSize(new Dimension(200, 144));
+        buttonsFrame.setPreferredSize(new Dimension(250, 250));
         final Vector<JButton> buttons = new Vector<>();
         
-        for(int i = 0; i < width * height; i++) {
+        for(int i = 0; i < params.get(0) * params.get(1); i++) {
         	JButton btn = new JButton();
         	
         	btn.addActionListener(new ActionListener() {
@@ -84,6 +88,13 @@ public class createmap extends DefaultInternalAction {
         final JButton save = new JButton("Save");
         type.add(save);
         
+        final JFileChooser fileChooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("*.txt", "txt", "text");
+        fileChooser.setFileFilter(filter);
+        
+        final JButton buttonFile = new JButton("Import");
+        type.add(buttonFile);
+        
         frame.add(map);
         frame.pack();
         frame.setVisible(true);
@@ -116,6 +127,87 @@ public class createmap extends DefaultInternalAction {
             }
         });
         
+        buttonFile.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent event) {
+        		
+        		int result = fileChooser.showOpenDialog(new JFrame());
+        		
+                if (result == JFileChooser.APPROVE_OPTION) {
+                	
+                	frame.setVisible(false);
+                	
+                	FileReader file;
+					try {
+						file = new FileReader(fileChooser.getSelectedFile());
+						BufferedReader br = new BufferedReader(file);
+						
+						String line = br.readLine();
+		    			String[] lineValues = line.split("\\s+");
+		    			
+		    			map.removeAll();
+		    			buttons.clear();
+		    			params.removeAllElements();
+		    			params.addElement(Integer.parseInt(lineValues[0]));
+		    			params.addElement(Integer.parseInt(lineValues[1]));
+		    			params.addElement(Integer.parseInt(lineValues[2]));
+		    			params.addElement(Integer.parseInt(lineValues[3]));
+		    			
+		    			map.setLayout(new GridLayout(params.get(1), params.get(0)));
+		    			
+		    			for(int i = 0; i < params.get(0) * params.get(1); i++) {
+		    	        	JButton btn = new JButton();
+		    	        	
+		    	        	btn.addActionListener(new ActionListener() {
+		    	            	public void actionPerformed(ActionEvent e) {
+		    	            		if(color == 0)
+		    	            			((JButton)e.getSource()).setBackground(new JButton().getBackground());
+		    	            		if(color == 1)
+		    	            			((JButton)e.getSource()).setBackground(Color.BLACK);
+		    	            		if(color == 2)
+		    	            			((JButton)e.getSource()).setBackground(Color.GREEN);
+		    	            		if(color == 3)
+		    	            			((JButton)e.getSource()).setBackground(Color.RED);
+		    	            		
+		    	            		((JButton)e.getSource()).repaint();
+		    	                }
+		    	            });     	
+		    	        	
+		    	            btn.setPreferredSize(new Dimension(10, 10));
+		    	            map.add(btn);
+		    	            buttons.add(btn);
+		    	        }
+		    					    			
+		    			frame.repaint();
+	    		        frame.setVisible(true);
+		    			
+	        			while ((line = br.readLine()) != null) {
+	        				lineValues = line.split("\\s+");
+	        				
+	        				switch(lineValues[0]) {
+	        				case "OBSTACLE":
+	        					buttons.get(Integer.parseInt(lineValues[1]) + Integer.parseInt(lineValues[2]) * params.get(0)).setBackground(Color.BLACK);
+	        					break;
+	        				case "DOOR":
+	        					buttons.get(Integer.parseInt(lineValues[1]) + Integer.parseInt(lineValues[2]) * params.get(0)).setBackground(Color.GREEN);
+	        					break;
+	        				case "MAINDOOR":
+	        					buttons.get(Integer.parseInt(lineValues[1]) + Integer.parseInt(lineValues[2]) * params.get(0)).setBackground(Color.RED);
+	        					break;
+	        				default:
+	        					break;
+	        				}
+	        				buttons.get(Integer.parseInt(lineValues[1]) + Integer.parseInt(lineValues[2]) * params.get(0)).repaint();
+	        			}
+	        			
+	        			br.close();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+                }
+            }
+        });
+        
         //add the event listeners
         save.addActionListener(new ActionListener() {       	
             public void actionPerformed(ActionEvent e) {
@@ -134,15 +226,15 @@ public class createmap extends DefaultInternalAction {
 				try {
 					writer = new PrintWriter("worldMaps/Map" + (lastMap + 1) + ".txt", "UTF-8");
 					
-					writer.println(width + " " + height + " " + nAgents + " " + nSecurity);
+					writer.println(params.get(0) + " " + params.get(1) + " " + params.get(2) + " " + params.get(3));
 	            	
 	            	for(int i = 0; i < buttons.size(); i++) {
 	            		if(buttons.get(i).getBackground().equals(Color.BLACK))
-	            			writer.println("OBSTACLE " + i % width + " " + i / width);
+	            			writer.println("OBSTACLE " + i % params.get(0) + " " + i / params.get(0));
 	            		if(buttons.get(i).getBackground().equals(Color.GREEN))
-	            			writer.println("DOOR " + i % width + " " + i / width);
+	            			writer.println("DOOR " + i % params.get(0) + " " + i / params.get(0));
 	            		if(buttons.get(i).getBackground().equals(Color.RED))
-	            			writer.println("MAINDOOR " + i % width + " " + i / width);
+	            			writer.println("MAINDOOR " + i % params.get(0) + " " + i / params.get(0));
 	            	}
 	            		
 	            	writer.close();
