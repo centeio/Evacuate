@@ -51,3 +51,8 @@
 	.my_name(N);
 	killagent;
 	.kill_agent(N).
+	
++phonecall[source(Ag)] <-
+	.print("Received phone call");
+	.println("Sending information");
+	.send(Ag, tell, securityKnowledge).

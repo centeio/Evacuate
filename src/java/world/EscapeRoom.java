@@ -22,6 +22,7 @@ public class EscapeRoom extends Environment {
     public static final Term    environment = Literal.parseLiteral("environment");
     public static final Term    start = Literal.parseLiteral("start");
     public static final Term    kill = Literal.parseLiteral("killagent");
+    public static final Term    setKnowlege = Literal.parseLiteral("setKnowledge");
     private static final int 	numberAgents = 10;
     private static final int 	numberSecurity = 2;
 
@@ -40,36 +41,38 @@ public class EscapeRoom extends Environment {
     	logger.info(agName+" doing: "+ action);
         
         try {
-            if (action.equals(move)) {
+            if (action.equals(move))
                 model.moveRandomly(agName);
-            }
-            else if (action.equals(wait)) {
+            
+            else if (action.equals(wait))
                 model.agentWait();
-            }           
-            else if (action.equals(alert)) {
+            
+            else if (action.equals(alert))
                 model.moveAlert(agName);
-            }
-            else if(action.equals(createFire)) {            	
+            
+            else if(action.equals(createFire))     	
             	model.createFire();
-            }
-            else if(action.equals(environment)) {
+            
+            else if(action.equals(environment))
             	model.environment();
-            }
-            else if(action.equals(panicEnv)) {
+            
+            else if(action.equals(panicEnv))
             	model.panicEnv(agName);
-            }
-            else if(action.equals(panicSeg)) {
+            
+            else if(action.equals(panicSeg))
             	model.panicSeg(agName);
-            } 
-            else if(action.equals(kill)) {
+            
+            else if(action.equals(kill))
             	model.kill(agName);
-            } 
-            else if(action.equals(start)) {
+            
+            else if(action.equals(setKnowlege))
+            	model.setKnowledge(model.getAgentByName(agName), true);
+            
+            else if(action.equals(start))
             	System.out.println("Starting system.");
-            }
-            else {
+            else
                 return false;
-            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -84,7 +87,7 @@ public class EscapeRoom extends Environment {
         return true;
     }
       
-    void updatePercepts() {
+    private void updatePercepts() {
         
         model.updateInjuryPanicScale();
         
@@ -116,11 +119,12 @@ public class EscapeRoom extends Environment {
 		        Literal agsafe = Literal.parseLiteral("safe(Bob"+i+")");
 		        addPercept("Bob"+i,agsafe);
 	        }
-		    //agent's safety
-	        if(model.getkArea(i)) {
-		        Literal karea = Literal.parseLiteral("kowledgeofArea(Bob"+i+")");
-		        addPercept("Bob"+i,karea);
-	        }
+	        
+		    //agent's knowledge of the area
+	        Literal karea = Literal.parseLiteral("kowledgeofArea(Bob"+i+", 0)");
+	        if(model.getkArea(i))
+		        karea = Literal.parseLiteral("kowledgeofArea(Bob"+i+", 1)");
+	        addPercept("Bob"+i,karea);
         }
         
         for(int i = numberAgents; i < numberAgents + numberSecurity; i++) {
@@ -145,6 +149,15 @@ public class EscapeRoom extends Environment {
 	        double selfln = model.getAgSelflessness(i);
 	        Literal agselfln = Literal.parseLiteral("selflessness(Seg"+i+","+ selfln +")");
 	        addPercept("Seg"+i, agselfln);
+	        
+	      //agent's safety
+	        if(model.isAgSafe(i)) {
+		        Literal agsafe = Literal.parseLiteral("safe(Seg"+i+")");
+		        addPercept("Seg"+i,agsafe);
+	        }
+		    
+	        Literal karea = Literal.parseLiteral("kowledgeofArea(Seg"+i+", 1)");
+	        addPercept("Seg"+i,karea);
         }
     }
 
@@ -153,4 +166,6 @@ public class EscapeRoom extends Environment {
     public void stop() {
         super.stop();
     }
+    
+    
 }
