@@ -19,7 +19,7 @@ public class RoomModel extends GridWorldModel {
 	public static final int DOOR  = 8;
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
-	private static final int FIRESPREAD = 30;
+	private static final int FIRESPREAD = 20;
 	private static final double MAXSPEED = 4.0;
 
 	private static Random random = new Random(System.currentTimeMillis());
