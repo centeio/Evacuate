@@ -227,7 +227,6 @@ public class EscapeRoom extends Environment {
 				    medianValue = safetimes.get(middle);
 				else
 				   medianValue = (safetimes.get(middle-1) + safetimes.get(middle))/ 2;
-				
 		        
 		        PrintWriter writer;
 				try {					

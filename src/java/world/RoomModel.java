@@ -115,10 +115,12 @@ public class RoomModel extends GridWorldModel {
 				
 				model.setAgPos(i, x, y);
 				model.panicscales.add(i, 0.0);
-				model.ishelping.add(i, -1);				
-				if(random.nextInt(100) < MOBILITY) {
-					model.injscales.add(i, 0.1 + random.nextInt(2)/10.0);
-				}
+				model.ishelping.add(i, -1);
+				if(i < nAgents)
+					if(random.nextInt(100) < MOBILITY)
+						model.injscales.add(i, 0.1 + random.nextInt(2)/10.0);
+					else
+						model.injscales.add(i, 0.0);
 				else
 					model.injscales.add(i, 0.0);
 				model.safe.add(i, false);
@@ -228,6 +230,7 @@ public class RoomModel extends GridWorldModel {
 	public double getAgPanic(int i) { return panicscales.get(i); }
 	public double getAgInjScale(int i) { return injscales.get(i); }
 	public int getIsHelping(int i) { return ishelping.get(i); }
+	public int getWhoHelps(int i) { return ishelping.indexOf(i); }
 	public int getnAgs() { return nAgents; }
 	public int[][] getMap() { return model.data; }
 	public Boolean isDead(String agName) { return agentDead.get(getAgentByName(agName)); }
@@ -444,6 +447,8 @@ public class RoomModel extends GridWorldModel {
 			//agent being helped
 			if((agHelping = ishelping.indexOf(agent)) != -1) {
 				setAgPos(agent, getAgPos(agHelping));
+				if(safe.get(agHelping))
+					safe.set(agent, true);
 				return;
 			}
 			
@@ -518,10 +523,11 @@ public class RoomModel extends GridWorldModel {
 				}
 				
 				//ver se alguem precisa de ajuda e ajuda se puder
-				if(ishelping.get(agent) == -1 && injscales.get(agent) < 0.5 && injscales.get(i) >= 0.5 && !ishelping.contains(i) && !isDead(i)) {
+				if(ishelping.get(agent) == -1 && injscales.get(agent) < 0.5 && injscales.get(i) > 0 && !ishelping.contains(i) && !isDead(i) && agent != i) {
 					
-					if(agent >= nAgents)
+					if(agent >= nAgents) {
 						ishelping.set(agent, i);
+					}
 					else {
 						prob = random.nextInt(10)/10.0;
 						if(helpful(i) > prob) {
@@ -678,6 +684,10 @@ public class RoomModel extends GridWorldModel {
 		return safe;
 	}
 
+	public boolean isBeingHelped(int agent) {
+		return ishelping.contains(agent);
+	}
+	
 	public void died(String agName) {
 		agentDead.set(getAgentByName(agName), true);
 		nDead++;

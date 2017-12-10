@@ -55,10 +55,24 @@ public class RoomView extends GridWorldView {
     public void drawAgent(Graphics g, int x, int y, Color c, int id) {
 		RoomModel model = (RoomModel)this.model;
 		
-		if(!model.isDead(id) && !model.isAgSafe(id)) {
+		if(!model.isDead(id) && !model.isAgSafe(id) && !model.isBeingHelped(id)) {
 			String label;
 			
-			if(id >= numberAgents) {
+			if(model.getIsHelping(id) != -1) {
+				c = Color.YELLOW;
+				
+				if(id >= numberAgents)
+					if(model.getIsHelping(id) >= numberAgents)
+						label = "S" + id + "+S" + model.getIsHelping(id);
+					else
+						label = "S" + id + "+P" + model.getIsHelping(id);
+				else
+					if(model.getIsHelping(id) >= numberAgents)
+						label = "P" + id + "+S" + model.getIsHelping(id);
+					else
+						label = "P" + id + "+P" + model.getIsHelping(id);
+			}
+			else if(id >= numberAgents) {
 				c = Color.BLUE;
 				label = "S" + id;
 			}
@@ -76,13 +90,34 @@ public class RoomView extends GridWorldView {
 			super.drawString(g, x, y, defaultFont, label);
 		}
 		
-		else if(model.isDead(id)){
+		if(model.isDead(id)){
 			
 			g.drawLine(x * cellSizeW, y * cellSizeH, x  * cellSizeW + cellSizeW, y * cellSizeH + cellSizeH);
 	        g.drawLine(x * cellSizeW, y * cellSizeH + cellSizeH, x  * cellSizeW + cellSizeW, y * cellSizeH);
 	        c = Color.BLACK;
 	        
 	        super.drawAgent(g, x, y, c, -1);
+		}
+		
+		if(model.isBeingHelped(id) && !model.isAgSafe(id)){
+			String label;
+			c = Color.YELLOW;
+			
+			if(id >= numberAgents)
+				if(model.getWhoHelps(id) >= numberAgents)
+					label = "S" + model.getWhoHelps(id) + "+S" + id;
+				else
+					label = "P" + model.getWhoHelps(id) + "+S" + id;
+			else
+				if(model.getWhoHelps(id) >= numberAgents)
+					label = "S" + model.getWhoHelps(id) + "+P" + id;
+				else
+					label = "P" + model.getWhoHelps(id) + "+P" + id;
+	        
+	        super.drawAgent(g, x, y, c, -1);
+	        
+	        g.setColor(Color.BLACK);
+			super.drawString(g, x, y, defaultFont, label);
 		}
     }
 }
