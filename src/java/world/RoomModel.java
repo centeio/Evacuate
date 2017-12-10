@@ -19,7 +19,7 @@ public class RoomModel extends GridWorldModel {
 	public static final int DOOR  = 8;
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
-	private static final int FIRESPREAD = 20;
+	private static final int FIRESPREAD = 25;
 	private static final double MAXSPEED = 2.0;
 
 	private static Random random = new Random(System.currentTimeMillis());
@@ -37,8 +37,12 @@ public class RoomModel extends GridWorldModel {
 	private ArrayList<Double> injscales = new ArrayList<Double>();
 	private ArrayList<Integer> ishelping = new ArrayList<Integer>();
 	private ArrayList<Boolean> safe = new ArrayList<Boolean>();
+
+
 	private ArrayList<Boolean> kArea = new ArrayList<Boolean>();
 	private ArrayList<Boolean> herding = new ArrayList<Boolean>();
+	private int nDead = 0;
+	private ArrayList<Long> times = new ArrayList<Long>();
 
 	// singleton pattern
 	protected static RoomModel model = null;
@@ -117,6 +121,7 @@ public class RoomModel extends GridWorldModel {
 				model.herding.add(i, false);
 				model.following.add(i, -1);
 				model.doorSelected.add(i, null);
+				model.times.add(i, System.currentTimeMillis());
 				
 				if(i < nbAgs) {
 					double selflessness = random.nextInt(10)/10.0;
@@ -312,16 +317,13 @@ public class RoomModel extends GridWorldModel {
 	 * @param p1 Destination
 	 * @return Location of next position.
 	 */
-	private Location doesAgSeeIt(int ag, Location p1) {		
+	private Boolean doesAgSeeIt(int ag, Location p1) {		
 		Location p0 = getAgPos(ag);
 
 	    Vector<Location> points = linepp(p0,p1);
 	    if(points == null)
-	    	return null;
-	    if(Math.round(agentSpeed(ag)) >= points.size())
-	    	return points.lastElement();
-	    else
-	    	return points.get(Math.toIntExact(Math.round(agentSpeed(ag))));
+	    	return false;
+	    return true;
 	}
 
 	private Vector<Location> linepp(Location p0, Location p1) {
@@ -482,7 +484,7 @@ public class RoomModel extends GridWorldModel {
 		
 		for(int i = 0; i < nAgents + nSecurity ; i++) {
 			
-			if(doesAgSeeIt(agent, getAgPos(i)) != null && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
+			if(doesAgSeeIt(agent, getAgPos(i)) && getAgPos(agent).distanceManhattan(getAgPos(i)) <= 5) {
 				
 				//Propaga panico
 				if(panicscales.get(agent) > panicscales.get(i))
@@ -592,7 +594,7 @@ public class RoomModel extends GridWorldModel {
 				setAgPanic(i, 1.0);
 				
 				int dist = agi.distanceManhattan(fire);
-				if(dist <= 4) {
+				if(dist <= 2) {
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
 			}
@@ -653,9 +655,24 @@ public class RoomModel extends GridWorldModel {
 
 	public void kill(String agName) {
 		agentDead.set(getAgentByName(agName), true);
+		times.set(getAgentByName(agName), System.currentTimeMillis() - times.get(getAgentByName(agName)));
 		setAgPos(getAgentByName(agName), getAgPos(getAgentByName(agName)));
 	}
 
+	public int getDead() {
+		return model.nDead;
+	}
 
+	public ArrayList<Long> getTimes() {
+		return times;
+	}
+
+	public ArrayList<Boolean> getSafe() {
+		return safe;
+	}
+
+	public void died(String agName) {
+		nDead++;
+	}
 	
 }

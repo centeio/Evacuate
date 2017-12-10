@@ -52,7 +52,7 @@
 	
 +safe(X) <-
 	.my_name(N);
-	killagent;
+	safeagent;
 	.kill_agent(N).
 	
 +kowledgeofArea(X, Y): Y == 0 & .random(N) & N < 0.1 & panicscale(_,P) & P > 0.5 <-
