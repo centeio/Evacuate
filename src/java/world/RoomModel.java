@@ -115,7 +115,7 @@ public class RoomModel extends GridWorldModel {
 				model.setAgPos(i, x, y);
 				model.panicscales.add(i, 0.0);
 				model.ishelping.add(i, -1);
-				model.injscales.add(i, 0.0);
+				model.injscales.add(i, 0.0);				
 				model.safe.add(i, false);
 				model.kArea.add(i, false);
 				model.herding.add(i, false);
