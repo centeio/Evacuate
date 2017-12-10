@@ -492,7 +492,7 @@ public class RoomModel extends GridWorldModel {
 			    	setAgPos(agent, path.get(path.size() - 2).getTwo().getLocation());
 			    }
 			    else {
-			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent))) - 1).getTwo().getLocation());
+			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent)))).getTwo().getLocation());
 			    }
 			}
 			
