@@ -112,11 +112,13 @@ public class AStar<T extends Comparable<T>> {
      */
     @SuppressWarnings("unused") 
     protected static int heuristicCostEstimate(Vertex start, Vertex goal) {
-    	Location fire;
+    	if(start.getLocation() == new Location(Integer.MAX_VALUE, Integer.MAX_VALUE))
+    		return 0;
+		Location fire;
 		if((fire = RoomModel.firedist(start.getLocation())) == null)
 			return 1;
 		return (12 - fire.distanceManhattan(start.getLocation()))*100;
-    }
+	}
 
     private static List<Edge> reconstructPath(Map<Vertex,Vertex> cameFrom, Vertex current) {
         final List<Edge> totalPath = new ArrayList<Edge>();

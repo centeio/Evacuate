@@ -134,6 +134,8 @@ public class Edge implements Comparable<Edge> {
     }
 
 	public int getCost() {
+		if(two.getLocation() == new Location(Integer.MAX_VALUE, Integer.MAX_VALUE))
+			return 0;
 		Location fire;
 		if((fire = RoomModel.firedist(two.getLocation())) == null)
 			return 1;
