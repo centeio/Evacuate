@@ -461,8 +461,16 @@ public class RoomModel extends GridWorldModel {
 			}
 			
 			List<Edge> path = AStar.aStar(graph, current, goal);
-			if(path != null && path.size() > 0)
-				setAgPos(agent, path.get(0).getNeighbor(current).getLocation());
+	
+			if(path != null && path.size() > 0) {
+			    if(Math.round(agentSpeed(agent)) >= path.size()) {
+			    	setAgPos(agent, path.get(path.size()-1).getTwo().getLocation());
+			    }
+			    else {
+			    	setAgPos(agent, path.get(Math.toIntExact(Math.round(agentSpeed(agent)))).getTwo().getLocation());
+			    }
+			}
+				
 			
 			if(mainDoorsPositions.contains(getAgPos(agent)))
 				safe.set(agent, true);
