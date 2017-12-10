@@ -21,7 +21,12 @@ public class RoomModel extends GridWorldModel {
 	public static final int FIRE = 32;
 	private static final int FIRESPREAD = 25;
 	private static final double MAXSPEED = 2.0;
+<<<<<<< HEAD
 	private static final Location MAINEXIT = new Location(Integer.MAX_VALUE, Integer.MAX_VALUE);
+=======
+	private static final double MOBILITY = 5;
+	public static final Location MAINEXIT = new Location(Integer.MAX_VALUE, Integer.MAX_VALUE);
+>>>>>>> 7d75af4acd848f1a12407a8cd12ecea9fe31358f
 
 	private static Random random = new Random(System.currentTimeMillis());
 
@@ -116,7 +121,7 @@ public class RoomModel extends GridWorldModel {
 				model.setAgPos(i, x, y);
 				model.panicscales.add(i, 0.0);
 				model.ishelping.add(i, -1);				
-				if(random.nextInt(100) < 50) {
+				if(random.nextInt(100) < MOBILITY) {
 					model.injscales.add(i, 0.1 + random.nextInt(2)/10.0);
 				}
 				else
