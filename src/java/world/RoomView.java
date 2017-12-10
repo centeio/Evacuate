@@ -72,8 +72,16 @@ public class RoomView extends GridWorldView {
 			}
 			super.drawAgent(g, x, y, c, -1);
 			
-			g.setColor(Color.black);
+			g.setColor(Color.BLACK);
 			super.drawString(g, x, y, defaultFont, label);
+		}
+		else {
+			
+			g.drawLine(x * cellSizeW, y * cellSizeH, x  * cellSizeW + cellSizeW, y * cellSizeH + cellSizeH);
+	        g.drawLine(x * cellSizeW, y * cellSizeH + cellSizeH, x  * cellSizeW + cellSizeW, y * cellSizeH);
+	        c = Color.BLACK;
+	        
+	        super.drawAgent(g, x, y, c, -1);
 		}
     }
 }
