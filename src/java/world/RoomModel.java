@@ -21,6 +21,7 @@ public class RoomModel extends GridWorldModel {
 	public static final int FIRE = 32;
 	private static final int FIRESPREAD = 25;
 	private static final double MAXSPEED = 2.0;
+	private static final Location MAINEXIT = new Location(Integer.MAX_VALUE, Integer.MAX_VALUE);
 
 	private static Random random = new Random(System.currentTimeMillis());
 
@@ -148,13 +149,13 @@ public class RoomModel extends GridWorldModel {
 
 	private void createGraph() {
 		
-		model.graph.addVertex(new Vertex(new Location(Integer.MAX_VALUE, Integer.MAX_VALUE)), true);
+		model.graph.addVertex(new Vertex(MAINEXIT), true);
 				
 		for(int i = 0; i < model.data.length; i++) {
 			for(int j = 0; j <  model.data[0].length; j++) {					
 				model.graph.addVertex(new Vertex(new Location(i,j)), true);
 				if(model.data[i][j] == MAINDOOR)
-					model.graph.addEdge(model.graph.getVertex(new Location(i,j)), model.graph.getVertex(new Location(Integer.MAX_VALUE, Integer.MAX_VALUE)));
+					model.graph.addEdge(model.graph.getVertex(new Location(i,j)), model.graph.getVertex(MAINEXIT));
 			}
 		}
 		
@@ -438,18 +439,8 @@ public class RoomModel extends GridWorldModel {
 			}
 			
 			//Se agent sabe a area, vai em direcao a saida
-			if(kArea.get(agent)) {
-				Location closestDoor = null;
-				int distanceExit = Integer.MAX_VALUE;
-				
-				//Encontra main door mais proxima
-				for(Location location : mainDoorsPositions)
-					if(currentPosition.distanceManhattan(location) < distanceExit)
-						closestDoor = location;
-				
-				if(closestDoor != null)
-					goal = graph.getVertex(closestDoor);
-			}
+			if(kArea.get(agent))
+				goal = graph.getVertex(MAINEXIT);
 			
 			//Se eu estou a seguir um caminho
 			else if(herding.get(agent)) {
@@ -457,7 +448,7 @@ public class RoomModel extends GridWorldModel {
 				//Se nao estou a seguir ninguem, sou o lider (fui eu que ativei o A*), vou ate a saida, 
 				//mas nao a melhor saida, para simular que o agente nao sabe a area
 				if(following.get(agent) == -1) {
-					//procuro uma sa�da vis�vel
+					//procuro uma saida visivel
 					for(Location location : mainDoorsPositions) {
 						if(doesAgSeeIt(agent, location)) {
 							doorSelected.set(agent, location);
