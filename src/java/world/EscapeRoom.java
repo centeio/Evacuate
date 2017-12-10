@@ -5,6 +5,10 @@ import jason.asSyntax.*;
 import jason.environment.*;
 import jason.environment.grid.Location;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.logging.*;
 
 public class EscapeRoom extends Environment {
@@ -22,6 +26,7 @@ public class EscapeRoom extends Environment {
     public static final Term    environment = Literal.parseLiteral("environment");
     public static final Term    start = Literal.parseLiteral("start");
     public static final Term    kill = Literal.parseLiteral("killagent");
+    public static final Term    safe = Literal.parseLiteral("safeagent");
     public static final Term    setKnowlege = Literal.parseLiteral("setKnowledge");
     private static final int 	numberAgents = 10;
     private static final int 	numberSecurity = 2;
@@ -62,7 +67,12 @@ public class EscapeRoom extends Environment {
             else if(action.equals(panicSeg))
             	model.panicSeg(agName);
             
-            else if(action.equals(kill))
+            else if(action.equals(kill)) {
+            	model.died(agName);
+            	model.kill(agName);
+            }
+            
+            else if(action.equals(safe))
             	model.kill(agName);
             
             else if(action.equals(setKnowlege))
@@ -90,9 +100,12 @@ public class EscapeRoom extends Environment {
     private void updatePercepts() {
         
         model.updateInjuryPanicScale();
+        int count = 0;
         
         for(int i = 0; i < numberAgents; i++) {
         	clearPercepts("Bob"+i);
+        	if(model.isAgSafe(i) || model.isDead(i))
+        		count ++;
         	
         	//agent's location
         	Location agloc = model.getAgPos(i);
@@ -130,6 +143,9 @@ public class EscapeRoom extends Environment {
         for(int i = numberAgents; i < numberAgents + numberSecurity; i++) {
         	clearPercepts("Seg"+i);
         	
+        	if(model.isAgSafe(i) || model.isDead(i))
+        		count ++;
+        	
         	//agent's location
         	Location agloc = model.getAgPos(i);
 	        Literal pos = Literal.parseLiteral("pos(Seg" + i + "," + agloc.x + "," + agloc.y + ")");
@@ -158,6 +174,50 @@ public class EscapeRoom extends Environment {
 		    
 	        Literal karea = Literal.parseLiteral("kowledgeofArea(Seg"+i+", 1)");
 	        addPercept("Seg"+i,karea);
+	        
+	        if(count == numberAgents + numberSecurity) {
+		        Literal shutdown = Literal.parseLiteral("shutdown");
+		        addPercept("environmentAg",shutdown);
+		        
+				int safe = 0;
+				long times = 0;
+				
+				ArrayList<Long> safetimes = new ArrayList<Long>();
+				
+				for(int t = 0; t< model.getTimes().size();t++) {
+					if(model.getSafe().get(t)) {
+						safe++;
+						times += model.getTimes().get(t);
+						safetimes.add(model.getTimes().get(t));
+					}				
+				}
+				
+				int middle = safetimes.size()/2;
+				Long medianValue = (long) 0.0; //declare variable 
+				if (safetimes.size()%2 == 1) 
+				    medianValue = safetimes.get(middle);
+				else
+				   medianValue = (safetimes.get(middle-1) + safetimes.get(middle))/ 2;
+				
+		        
+		        PrintWriter writer;
+				try {					
+					writer = new PrintWriter("statitics.txt", "UTF-8");
+					int ns = numberAgents + numberSecurity;
+			        writer.println("Number of agents: "+ ns);
+			        writer.println("Number of deaths: "+ model.getDead());
+			        writer.println("Average Time: " + times/safe);
+			        writer.println("Median Time: " + medianValue);
+			        writer.close();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+	        }
         }
     }
 

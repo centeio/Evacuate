@@ -19,3 +19,6 @@
 +!continue : true <-
 	environment;
 	!continue.
+	
++shutdown : true <-
+	.stopMAS.
