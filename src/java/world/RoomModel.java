@@ -20,7 +20,7 @@ public class RoomModel extends GridWorldModel {
 	public static final int MAINDOOR = 16;
 	public static final int FIRE = 32;
 	private static final int FIRESPREAD = 20;
-	private static final double MAXSPEED = 4.0;
+	private static final double MAXSPEED = 2.0;
 
 	private static Random random = new Random(System.currentTimeMillis());
 
@@ -43,7 +43,7 @@ public class RoomModel extends GridWorldModel {
 	// singleton pattern
 	protected static RoomModel model = null;
 
-	synchronized public static RoomModel create(int w, int h, int nbAgs, int nbSegs) {
+	synchronized public static RoomModel create(int w, int h, int nbAgs, int nbSegs, String map) {
 		if (model == null) {
 			model = new RoomModel(w, h, nbAgs + nbSegs);
 		}
@@ -52,7 +52,7 @@ public class RoomModel extends GridWorldModel {
 
 		FileReader file;
 		try {
-			file = new FileReader("worldMaps/Map1.txt");
+			file = new FileReader(map);
 			BufferedReader br = new BufferedReader(file);
 
 			String line;

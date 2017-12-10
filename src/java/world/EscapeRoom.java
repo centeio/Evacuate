@@ -5,6 +5,8 @@ import jason.asSyntax.*;
 import jason.environment.*;
 import jason.environment.grid.Location;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.logging.*;
 
 public class EscapeRoom extends Environment {
@@ -23,16 +25,38 @@ public class EscapeRoom extends Environment {
     public static final Term    start = Literal.parseLiteral("start");
     public static final Term    kill = Literal.parseLiteral("killagent");
     public static final Term    setKnowlege = Literal.parseLiteral("setKnowledge");
-    private static final int 	numberAgents = 10;
-    private static final int 	numberSecurity = 2;
+    public static final Term    initialize = Literal.parseLiteral("initialize");
+    private static int 	numberAgents = 10;
+    private static int 	numberSecurity = 2;
+    private static String 	mode = "run";
+    private static String map = "worldMaps/Map2.txt";
 
     /** Called before the MAS execution with the args informed in .mas2j */
     @Override
     public void init(String[] args) {
         super.init(args);
         
-        model = RoomModel.create(30, 20, numberAgents, numberSecurity);
-        view = new RoomView(model, "Escape Room", 700, numberAgents, numberSecurity);
+        int width = 30, height = 20;
+        FileReader file;
+		try {
+			file = new FileReader(map);
+			BufferedReader br = new BufferedReader(file);
+			
+			String line = br.readLine();
+			String[] lineValues = line.split("\\s+");
+			width = Integer.parseInt(lineValues[0]);
+			height = Integer.parseInt(lineValues[1]);
+			numberAgents = Integer.parseInt(lineValues[2]);
+			numberSecurity = Integer.parseInt(lineValues[3]);
+			
+			br.close();
+		}
+		catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+        
+        model = RoomModel.create(width, height, numberAgents, numberSecurity, map);
+        view = new RoomView(model, "Escape Room", 1800, numberAgents, numberSecurity);
         model.setView(view);
     }
 
@@ -68,6 +92,9 @@ public class EscapeRoom extends Environment {
             else if(action.equals(setKnowlege))
             	model.setKnowledge(model.getAgentByName(agName), true);
             
+            else if(action.equals(initialize))
+            	return initialize();
+            
             else if(action.equals(start))
             	System.out.println("Starting system.");
             else
@@ -87,7 +114,7 @@ public class EscapeRoom extends Environment {
         return true;
     }
       
-    private void updatePercepts() {
+	private void updatePercepts() {
         
         model.updateInjuryPanicScale();
         
@@ -160,6 +187,31 @@ public class EscapeRoom extends Environment {
 	        addPercept("Seg"+i,karea);
         }
     }
+	
+    private boolean initialize() {
+        
+		try {
+			this.getEnvironmentInfraTier().getRuntimeServices().createAgent("environmentAg", "environmentAg.asl", null, null, null, null, null);
+			this.getEnvironmentInfraTier().getRuntimeServices().startAgent("environmentAg");
+			
+			Literal nAgents = Literal.parseLiteral("numberAgents(" + numberAgents + ")");
+			addPercept("environmentAg", nAgents);
+			
+			Literal nSecurity = Literal.parseLiteral("numberSecurity(" + numberSecurity + ")");
+			addPercept("environmentAg", nSecurity);
+			
+			Literal modeLiteral = Literal.parseLiteral("mode(" + mode + ")");
+			addPercept("environmentAg", modeLiteral);
+			
+			informAgsEnvironmentChanged();
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return true;
+	}
 
 	/** Called before the end of MAS execution */
     @Override
