@@ -33,7 +33,13 @@ public class EscapeRoom extends Environment {
     public static final Term    initialize = Literal.parseLiteral("initialize");
     private static int 	numberAgents = 10;
     private static int 	numberSecurity = 2;
-    private static String 	mode = "run";
+    private static int width = 30;
+    private static int height = 20;
+    private static int createWidth = 100;
+    private static int createHeight = 55;
+    private static int createAgents = 15;
+    private static int createSecurity = 5;
+    private static String 	mode = "create";
     private static String map = "worldMaps/Map2.txt";
 
     /** Called before the MAS execution with the args informed in .mas2j */
@@ -41,7 +47,6 @@ public class EscapeRoom extends Environment {
     public void init(String[] args) {
         super.init(args);
         
-        int width = 30, height = 20;
         FileReader file;
 		try {
 			file = new FileReader(map);
@@ -254,11 +259,28 @@ public class EscapeRoom extends Environment {
 			this.getEnvironmentInfraTier().getRuntimeServices().createAgent("environmentAg", "environmentAg.asl", null, null, null, null, null);
 			this.getEnvironmentInfraTier().getRuntimeServices().startAgent("environmentAg");
 			
-			Literal nAgents = Literal.parseLiteral("numberAgents(" + numberAgents + ")");
-			addPercept("environmentAg", nAgents);
-			
-			Literal nSecurity = Literal.parseLiteral("numberSecurity(" + numberSecurity + ")");
-			addPercept("environmentAg", nSecurity);
+			if(mode.equals("run")) {
+				
+				Literal nAgents = Literal.parseLiteral("numberAgents(" + numberAgents + ")");
+				addPercept("environmentAg", nAgents);
+				
+				Literal nSecurity = Literal.parseLiteral("numberSecurity(" + numberSecurity + ")");
+				addPercept("environmentAg", nSecurity);
+				
+			} else {
+				
+				Literal width = Literal.parseLiteral("width(" + createWidth + ")");
+				addPercept("environmentAg", width);
+				
+				Literal height = Literal.parseLiteral("height(" + createHeight + ")");
+				addPercept("environmentAg", height);
+				
+				Literal createAgents = Literal.parseLiteral("createAgents(" + EscapeRoom.createAgents + ")");
+				addPercept("environmentAg", createAgents);
+				
+				Literal createSecurity = Literal.parseLiteral("createSecurity(" + EscapeRoom.createSecurity + ")");
+				addPercept("environmentAg", createSecurity);
+			}
 			
 			Literal modeLiteral = Literal.parseLiteral("mode(" + mode + ")");
 			addPercept("environmentAg", modeLiteral);
