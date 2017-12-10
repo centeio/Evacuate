@@ -115,7 +115,7 @@ public class RoomModel extends GridWorldModel {
 				model.setAgPos(i, x, y);
 				model.panicscales.add(i, 0.0);
 				model.ishelping.add(i, -1);
-				model.injscales.add(i, 0.0);				
+				model.injscales.add(i, 0.2);				
 				model.safe.add(i, false);
 				model.kArea.add(i, false);
 				model.herding.add(i, false);
@@ -448,7 +448,7 @@ public class RoomModel extends GridWorldModel {
 				//Se nao estou a seguir ninguem, sou o lider (fui eu que ativei o A*), vou ate a saida, 
 				//mas nao a melhor saida, para simular que o agente nao sabe a area
 				if(following.get(agent) == -1) {
-					//procuro uma saída visível
+					//procuro uma saï¿½da visï¿½vel
 					for(Location location : mainDoorsPositions) {
 						if(doesAgSeeIt(agent, location)) {
 							doorSelected.set(agent, location);
@@ -583,10 +583,10 @@ public class RoomModel extends GridWorldModel {
 		for(int i = 0; i < nAgents + nSecurity ; i++) {
 			Location agi = getAgPos(i);
 			double prob = 0;
-
+			
 			//see if another agent is hurting, i.e. see if two are in the same cell
 			for(int j = i + 1; j < nAgents + nSecurity ; j++) {
-				Location agj = getAgPos(i);
+				Location agj = getAgPos(j);
 
 				if(agi.equals(agj)) {
 					//probability of i hurting j
@@ -613,7 +613,6 @@ public class RoomModel extends GridWorldModel {
 					setAgInjScale(i, Math.min(1,injscales.get(i)+(1-dist*0.2)));
 				}
 			}
-			
 
 			//see if agent fell
 			prob = random.nextInt(100);
