@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import jason.environment.grid.Location;
+import world.RoomModel;
+
 /**
  * Adapted from:
  * @author Justin Wetherell <phishman3579@gmail.com>
@@ -54,7 +57,7 @@ public class AStar<T extends Comparable<T>> {
             public int compare(Vertex o1, Vertex o2) {
                 if (fScore.get(o1) < fScore.get(o2))
                     return -1;
-                if (fScore.get(o2) < fScore.get(o1))
+                if (fScore.get(o2) > fScore.get(o1))
                     return 1;
                 return 0;
             }
@@ -109,7 +112,10 @@ public class AStar<T extends Comparable<T>> {
      */
     @SuppressWarnings("unused") 
     protected static int heuristicCostEstimate(Vertex start, Vertex goal) {
-        return 1;
+    	Location fire;
+		if((fire = RoomModel.firedist(start.getLocation())) == null)
+			return 1;
+		return (12 - fire.distanceManhattan(start.getLocation()))*100;
     }
 
     private static List<Edge> reconstructPath(Map<Vertex,Vertex> cameFrom, Vertex current) {

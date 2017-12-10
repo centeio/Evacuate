@@ -32,7 +32,6 @@ public class RoomModel extends GridWorldModel {
 	private ArrayList<Integer> doorsDistance = new ArrayList<Integer>();
 	private ArrayList<Integer> following = new ArrayList<Integer>();
 	private Vector<Location> mainDoorsPositions = new Vector<Location>();
-	private Vector<Location> doorSelected = new Vector<Location>();
 	private Vector<Boolean> agentDead = new Vector<Boolean>();
 	private ArrayList<Double> panicscales = new ArrayList<Double>();
 	private ArrayList<Double> selflessness= new ArrayList<Double>();
@@ -126,7 +125,6 @@ public class RoomModel extends GridWorldModel {
 				model.kArea.add(i, false);
 				model.herding.add(i, false);
 				model.following.add(i, -1);
-				model.doorSelected.add(i, null);
 				model.times.add(i, System.currentTimeMillis());
 				
 				if(i < nbAgs) {
@@ -387,6 +385,9 @@ public class RoomModel extends GridWorldModel {
 	public static Location firedist(Location l) {
 		int dist = 11;
 		Location fire = null;
+		
+		if(!model.isFree(RoomModel.FIRE, l))
+			return l;
 
 		for(int i = 0; i < firePositions.size(); i++) {
 			if(l.distanceManhattan(firePositions.elementAt(i)) < dist && linepp(l, firePositions.elementAt(i)) != null) {
@@ -452,13 +453,7 @@ public class RoomModel extends GridWorldModel {
 				//mas nao a melhor saida, para simular que o agente nao sabe a area
 				if(following.get(agent) == -1) {
 					//procuro uma saida visivel
-					for(Location location : mainDoorsPositions) {
-						if(doesAgSeeIt(agent, location)) {
-							doorSelected.set(agent, location);
-							break;
-						}
-					}
-					goal = graph.getVertex(doorSelected.get(agent));
+					goal = graph.getVertex(MAINEXIT);
 				}
 				//Se estou a seguir alguem, calculo o melhor caminho ate a esse agente
 				else
@@ -468,16 +463,7 @@ public class RoomModel extends GridWorldModel {
 			else {
 				herding.set(agent, true);
 				
-				Location mainDoor = mainDoorsPositions.get(random.nextInt(mainDoorsPositions.size()));
-				
-				for(Location location : mainDoorsPositions) {
-					if(doesAgSeeIt(agent, location)) {
-						mainDoor = location;
-						break;
-					}
-				}
-				doorSelected.set(agent, mainDoor);
-				goal = graph.getVertex(mainDoor);
+				goal = graph.getVertex(MAINEXIT);
 			}
 			
 			List<Edge> path = AStar.aStar(graph, current, goal);
@@ -565,7 +551,7 @@ public class RoomModel extends GridWorldModel {
 
 			model.add(RoomModel.FIRE, x, y);
 			
-			firePositions.add(new Location(x,y));
+			firePositions.add(new Location(x, y));
 
 		} catch (Exception e) {
 			e.printStackTrace();
